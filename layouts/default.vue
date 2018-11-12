@@ -1,55 +1,157 @@
 <template>
-  <div>
-    <nuxt/>
+  <div id="app" :class="theme" v-cloak>
+    <div id="app-main">
+      <background></background>
+      <header-view></header-view>
+      <main id="main">
+        <div id="main-content" 
+             class="main-content" 
+             :class="{
+               'full-column': fullColumn,
+               'error-column': errorColumn,
+               'mobile-layout': mobileLayout,
+               [$route.name]: true
+              }">
+          <nuxt></nuxt>
+        </div>
+        <transition name="aside">
+          <aside-view v-if="!fullColumn && !errorColumn && !mobileLayout"  keep-alive></aside-view>
+        </transition>
+      </main>
+      <template v-if="!mobileLayout">
+        <tool-box/>
+      </template>
+      <!-- footer -->
+      <footer-view v-if="!mobileLayout" />
+    </div>
   </div>
 </template>
 
-<style>
-html {
-  font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI',
-    Roboto, 'Helvetica Neue', Arial, sans-serif;
-  font-size: 16px;
-  word-spacing: 1px;
-  -ms-text-size-adjust: 100%;
-  -webkit-text-size-adjust: 100%;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-font-smoothing: antialiased;
-  box-sizing: border-box;
-}
+<script>
+  import { mapState } from 'vuex'  
+  import { Header,Background,Aside,ToolBox,Footer} from '~/components/layout'
+  export default {
+    name: 'app',
+    data() {
+      return {
+        theme: 'default',
+        clipboardText: '',
+        mobileLayout:false
+      }
+    },
+    components: {
+      HeaderView: Header,
+      AsideView:Aside,
+      footerView:Footer,
+      background:Background,
+      ToolBox,
+    },
+    mounted() {
+      
+    },
+    computed: {
+      ...mapState('option', [
+        'fullColumn',
+        'errorColumn'
+      ]),
+    },
+    methods: {
+      setTheme(theme) {
+        this.theme = theme
+      },
+      watchTabActive() {
+        let reallyDocumentTitle
+        document.addEventListener('visibilitychange', event => {
+          if (event.target.hidden || event.target.webkitHidden) {
+            reallyDocumentTitle = document.title
+            document.title = '皮皮虾，快回来！'
+          } else {
+            document.title = reallyDocumentTitle
+          }
+        }, false)
+      },
+      watchFullScreen() {
+        const fullscreenchange = event => {
+          // console.log('fullscreenchange', event)
+        }
+        document.addEventListener("fullscreenchange", fullscreenchange, false)
+        document.addEventListener("mozfullscreenchange", fullscreenchange, false)
+        document.addEventListener("webkitfullscreenchange", fullscreenchange, false)
+        document.addEventListener("msfullscreenchange", fullscreenchange, false)
+      }
+    },
+  }
+</script>
 
-*,
-*:before,
-*:after {
-  box-sizing: border-box;
-  margin: 0;
-}
+<style lang="scss" scoped>
+  #app {
+    color: $text;
 
-.button--green {
-  display: inline-block;
-  border-radius: 4px;
-  border: 1px solid #3b8070;
-  color: #3b8070;
-  text-decoration: none;
-  padding: 10px 30px;
-}
+    &[v-cloak] {
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+    #app-main {
+      transition: $mobile-aisde-transition;
 
-.button--green:hover {
-  color: #fff;
-  background-color: #3b8070;
-}
+      &.open {
+        transition: $mobile-aisde-transition;
+        transform: translateX(68%);
+      }
 
-.button--grey {
-  display: inline-block;
-  border-radius: 4px;
-  border: 1px solid #35495e;
-  color: #35495e;
-  text-decoration: none;
-  padding: 10px 30px;
-  margin-left: 15px;
-}
+      main {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        &.service {
+          width: 100%;
+        }
+        .main-content {
+          width:54.5em;
+          position: relative;
+          overflow: hidden;
+          @include css3-prefix(transition, width .35s);
 
-.button--grey:hover {
-  color: #fff;
-  background-color: #35495e;
-}
+          &:-moz-full-screen {
+            overflow-y: auto;
+          }
+           
+          &:-webkit-full-screen {
+            overflow-y: auto;
+          }
+            
+          &:fullscreen {
+            overflow-y: auto;
+          }
+
+          &.full-column {
+            width: 100%;
+            @include css3-prefix(transition, width .35s);
+          }
+
+          &.error-column {
+            width: 100%;
+            margin: 0;
+            @include css3-prefix(transition, width .35s);
+          }
+
+          &.mobile-layout {
+            width: 100%;
+            margin: 0;
+            padding: 1rem;
+            padding-top: $navbar-height + 1;
+          }
+
+          &.service {
+            width: 100%;
+            margin: -1em 0;
+
+            &.mobile-layout {
+              margin: 0;
+            }
+          }
+        }
+      }
+    }
+  }
 </style>
