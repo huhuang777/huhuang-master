@@ -10,7 +10,7 @@ if (process.browser) {
              '商业转载请联系作者获得授权，非商业转载请注明出处。',
              '作者：huhuang',
              '链接：' + location.href,
-             '来源：huhuang.me',
+             '来源：huhuang.net',
              ''
            ].join('\n')
   }

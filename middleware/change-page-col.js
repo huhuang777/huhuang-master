@@ -3,10 +3,10 @@
  * @module middleware/change-page-col
  */
 
-export default ({
+export default async ({
   route,
   store
-}, next) => {
+}) => {
 
   // columns
   const fullColumn = ['about', 'project', 'sitemap'].includes(route.name)
@@ -20,6 +20,4 @@ export default ({
   if (store.state.option.errorColumn !== errorColumn) {
     store.commit('option/SET_ERROR_COLUMU', errorColumn)
   }
-
-  next()
 }

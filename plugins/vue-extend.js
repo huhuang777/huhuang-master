@@ -3,13 +3,13 @@
  */
 
 import Vue from 'vue'
-import apiConfig from '~/api.config'
-import i18nConfig from '~/i18n.config'
-import filters from '~/filters'
-import i18nTransfer from '~/utils/i18n-transfer'
-import EmptyBox from '~/components/common/empty'
-import LoadingBox from '~/components/common/loading'
-import CommentBox from '~/components/common/comment'
+import apiConfig from '@/api.config'
+import i18nConfig from '@/i18n.config'
+import filters from '@/filters'
+import i18nTransfer from '@/utils/i18n-transfer'
+import EmptyBox from '@/components/common/empty'
+import LoadingBox from '@/components/common/loading'
+import CommentBox from '@/components/common/comment'
 
 const i18nData = i18nTransfer(i18nConfig)
 

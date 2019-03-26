@@ -1,6 +1,6 @@
 <template>
   <div class="empty-box">
-    <slot>{{ $i18n.text.empty || 'No Result Data.' }}</slot>
+    <slot>{{'No Result Data.' }}</slot>
   </div>
 </template>
 

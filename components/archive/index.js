@@ -4,7 +4,7 @@
  */
 import Tag from './tag.vue'
 import LatestArticle from './latestArticle.vue'
-import articleList from './articleList.vue'
+import articleList from './list.vue'
 import Carrousel from './carrousel.vue'
 
 export {

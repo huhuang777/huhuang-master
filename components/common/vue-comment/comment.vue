@@ -5,7 +5,7 @@
         <div class="count">
           <strong class="count">{{ comment.data.pagination.total || 0 }}</strong>
           <span>&nbsp;</span>
-          <span v-text="$i18n.text.comment.count">条评论</span>
+          <span>条评论</span>
         </div>
         <a href="" 
            class="like" 
@@ -13,7 +13,7 @@
            @click.stop.prevent="likePage">
           <i class="iconfont icon-like"></i>
           <strong>{{ likes || 0 }}</strong>
-          <span v-text="(mobileLayout && isGuestbookPage && language === 'zh') ? '人喜欢' : $i18n.text.comment.like"></span>
+          <span v-text="'人喜欢'"></span>
         </a>
         <a href="" class="shang" @click.stop.prevent="shang">
           <i class="iconfont icon-shang"></i>
@@ -24,18 +24,18 @@
            class="sort-btn"
            :class="{ actived: Object.is(sortMode, -1) }" 
            @click.stop.prevent="sortComemnts(-1)"
-           v-text="$i18n.text.comment.new">最新</a>
+           >最新</a>
         <a href="" 
            class="sort-btn"
            :class="{ actived: Object.is(sortMode, 2) }" 
            @click.stop.prevent="sortComemnts(2)"
-           v-text="$i18n.text.comment.hot">最热</a>
+          >最热</a>
       </div>
     </div>
     <transition name="module" mode="out-in">
       <div class="empty-box"
            v-if="!comment.data.data.length && !comment.fetching"
-           v-text="$i18n.text.comment.empty">Go right to the heart of the matter.</div>
+          >Go right to the heart of the matter.</div>
       <loading-box v-else-if="comment.fetching"></loading-box>
       <div class="list-box" v-else>
         <transition-group name="fade" tag="ul" class="comment-list">
@@ -48,7 +48,7 @@
                  rel="external nofollow noopener"
                  :href="comment.author.site" 
                  @click.stop="clickUser($event, comment.author)">
-                <img :alt="comment.author.name || $i18n.text.comment.anonymous"
+                <img :alt="comment.author.name"
                      :src="gravatar(comment.author.email) || `${cdnUrl}/images/anonymous.jpg`">
               </a>
             </div>
@@ -70,7 +70,7 @@
               </div>
               <div class="cm-content">
                 <p class="reply" v-if="!!comment.pid">
-                  <span v-text="$i18n.text.comment.reply">回复</span>
+                  <span>回复</span>
                   <span>&nbsp;</span>
                   <a href="" @click.stop.prevent="toSomeAnchorById(`comment-item-${comment.pid}`)">
                     <span>#{{ comment.pid }}&nbsp;</span>
@@ -84,14 +84,14 @@
                 <span class="create_at">{{ comment.create_at | timeAgo(language) }}</span>
                 <a href="" class="reply" @click.stop.prevent="replyComment(comment)">
                   <i class="iconfont icon-reply"></i>
-                  <span v-text="$i18n.text.comment.reply">回复</span>
+                  <span >回复</span>
                 </a>
                 <a href="" 
                    class="like" 
                    :class="{ liked: commentLiked(comment.id), actived: !!comment.likes }"
                    @click.stop.prevent="likeComment(comment)">
                   <i class="iconfont icon-zan"></i>
-                  <span v-text="$i18n.text.comment.ding">顶</span>
+                  <span>顶</span>
                   <span>&nbsp;({{ comment.likes }})</span>
                 </a>
               </div>
@@ -116,7 +116,7 @@
           <li class="item">
             <a href="" class="pagination-btn prev disabled" @click.stop.prevent>
               <span>— </span>
-              <span v-text="$i18n.text.comment.pagenation.old">old</span>
+              <span>old</span>
             </a>
           </li>
           <li class="item" :key="index" v-for="(item, index) in comment.data.pagination.total_page">
@@ -131,7 +131,7 @@
           </li>
           <li class="item">
             <a href="" class="pagination-btn next disabled" @click.stop.prevent>
-              <span v-text="$i18n.text.comment.pagenation.new">new</span>
+              <span>new</span>
               <span> —</span>
             </a>
           </li>
@@ -204,7 +204,7 @@
             <div class="will-reply" v-if="!!pid">
               <div class="reply-user">
                 <span>
-                  <span v-text="$i18n.text.comment.reply">回复</span>
+                  <span >回复</span>
                   <span>&nbsp;</span>
                   <a href="" @click.stop.prevent="toSomeAnchorById(`comment-item-${replyCommentSlef.id}`)">
                     <strong>#{{ replyCommentSlef.id }} @{{ replyCommentSlef.author.name }}：</strong>

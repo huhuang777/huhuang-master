@@ -1,12 +1,15 @@
 <template>
   <div class="carrousel">
     <transition name="module" mode="out-in">
-      <div class="swiper" v-swiper:swiper="swiperOption">
+      <empty-box class="article-empty-box" key="empty" v-if="!article.data.data.length">
+        <slot>{{ "空空如也" }}</slot>
+      </empty-box>
+      <div class="swiper" v-swiper:swiper="swiperOption"  v-else-if="renderSwiper">
         <div class="swiper-wrapper">
-          <div class="swiper-slide item" v-for="(article, index) in article" :key="index">
+          <div class="swiper-slide item"  v-for="(article, index) in article.data.data.slice(0, 9)" :key="index">
             <div class="content">
-              <img :src="article.thumb" :alt="article.title">
-              <nuxt-link to="`" class="title">
+              <img :src="buildThumb(article.thumb)" :alt="article.title">
+              <nuxt-link to="`/article/${article.id}`" class="title">
                 <span>{{ article.title }}</span>
               </nuxt-link>
             </div>
@@ -23,6 +26,7 @@
   export default {
     data() {
       return {
+        renderSwiper: true,
         swiperOption: {
           autoplay: {
             delay: 3500,
@@ -33,7 +37,7 @@
             el: '.swiper-pagination'
           },
           setWrapperSize: true,
-          autoHeight: true,
+          // autoHeight: true,
           mousewheel: true,
           observeParents: true,
           grabCursor: true,
@@ -44,10 +48,30 @@
     },
     props: {
       article: {
-        type: Array
+        type: Object
       }
     },
+    computed: {
+      ...mapState('option', ['imageExt', 'mobileLayout'])
+    },
     methods: {
+      buildThumb(thumb) {
+        if (thumb) {
+          if (this.mobileLayout) {
+            return `${thumb}?imageView2/1/w/768/h/271/format/${this.imageExt}/interlace/1/q/80|watermark/2/text/SHVodWFuZy5uZXQ=/font/Y2FuZGFyYQ==/fontsize/560/fill/I0ZGRkZGRg==/dissolve/30/gravity/SouthWest/dx/30/dy/15|imageslim`
+          } else {
+            return `${thumb}?imageView2/1/w/1190/h/420/format/${this.imageExt}/interlace/1/q/80|watermark/2/text/SHVodWFuZy5uZXQ=/font/Y2FuZGFyYQ==/fontsize/680/fill/I0ZGRkZGRg==/dissolve/30/gravity/SouthWest/dx/30/dy/15|imageslim`
+          }
+        } else {
+          return `${this.cdnUrl}/images/${this.mobileLayout ? 'mobile-' : ''}thumb-carrousel.jpg`
+        }
+      },
+      activated() {
+        this.renderSwiper = true
+      },
+      deactivated() {
+        this.renderSwiper = false
+      }
     }
   }
 </script>

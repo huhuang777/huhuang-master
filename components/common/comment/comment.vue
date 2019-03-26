@@ -41,8 +41,8 @@
         <transition-group name="fade" tag="ul" class="comment-list">
           <li class="comment-item" 
               :id="`comment-item-${comment.id}`" 
-              :key="index"
-              v-for="(comment, index) in comment.data.data">
+              :key="comment.id"
+              v-for="comment in comment.data.data">
             <div class="cm-avatar" v-if="!mobileLayout">
               <a target="_blank"
                  rel="external nofollow noopener"

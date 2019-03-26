@@ -2,7 +2,7 @@
   <div class="article-list-item">
     <div class="item-content">
       <div class="item-thumb">
-        <nuxt-link to="">
+        <nuxt-link :to="`/article/${article.id}`">
           <span class="item-oirigin" :class="{
             self: !article.origin,
             other: article.origin === 1,
@@ -13,20 +13,20 @@
             <span v-else-if="article.origin === 2">混撰</span>
           </span>
           <img class="item-thumb-img" 
-               :src="article.thumb"
+               :src="buildThumb(article.thumb)"
                :alt="article.title"
                :title="article.title">
         </nuxt-link>
       </div>
       <div class="item-body">
         <h4 class="item-title">
-          <nuxt-link to="" :title="article.title" v-text="article.title"></nuxt-link>
+          <nuxt-link :to="`/article/${article.id}`" :title="article.title" v-text="article.title"></nuxt-link>
         </h4>
         <p class="item-description" style="-webkit-box-orient: vertical;" v-html="article.description"></p>
         <div class="item-meta">
           <span class="date">
             <i class="iconfont icon-clock1"></i>
-            <span>{{ article.create_at||"2018/09/09"}}</span>
+            <span>{{ article.create_at | toYMD}}</span>
           </span>
           <span class="views">
             <i class="iconfont icon-eye"></i>
@@ -42,18 +42,20 @@
           </span>
           <span class="categories">
             <i class="iconfont icon-list"></i>
-            <nuxt-link :key="index"
-                       to=""
-                       v-if="article.category"
-                       v-for="(category, index) in article.category"
-                       >{{ category.name }}</nuxt-link>
+            <template  v-if="article.category">
+              <nuxt-link :key="index"
+                :to="`/category/${category.slug}`"
+                v-for="(category, index) in article.category"
+               >{{ category.name }}</nuxt-link>
+            </template>
+
             <span v-else>未分类</span>
           </span>
           <span class="tags">
             <i class="iconfont icon-tag"></i>
             <span v-if="!article.tag">无</span>
             <nuxt-link :key="index" 
-                       to="" 
+                       :to="`/tag/${tag.slug}`" 
                        v-for="(tag, index) in article.tag">{{ tag.name }}</nuxt-link>
           </span>
         </div>
@@ -63,12 +65,20 @@
 </template>
 
 <script>
+  import { mapState } from 'vuex'
   export default {
     name: 'article-list-item',
     props: {
       article: Object
     },
+    computed: {
+      ...mapState('option', ['imgExt', 'mobileLayout'])
+    },
     methods: {
+      buildThumb(thumb) {
+        if (!thumb) return `${this.cdnUrl}/images/thumb-article.jpg`
+        return `${thumb}?imageView2/1/w/350/h/238/format/${this.imgExt}/interlace/1/q/75|watermark/2/text/SHVodWFuZy5uZXQ=/font/Y2FuZGFyYQ==/fontsize/460/fill/I0ZGRkZGRg==/dissolve/23/gravity/SouthWest/dx/15/dy/7|imageslim`
+      }
     }
   }
 </script>

@@ -17,7 +17,7 @@
     layout: 'empty',
     props: ['error'],
     mounted() {
-    
+      console.log(this.error);
     },
     beforeDestroy() {
 

@@ -89,7 +89,7 @@
         <p class="item">
           <span class="title" :class="language">{{ languageIsEn ? 'Article Address:' : '永久地址：' }}</span>
           <span class="site-url" @click="copyArticleUrl">
-                <span>https://surmon.me/article/{{ article.id }}</span>
+                <span>https://huhuang.net/article/{{ article.id }}</span>
           </span>
         </p>
         <div class="item">
@@ -239,8 +239,8 @@
       },
       copyArticleUrl() {
         if (this.article.title) {
-          // console.log('要复制了', `https://surmon.me/article/${this.article.id}`, this.$root.$copyToClipboard)
-          this.$root.$copyToClipboard(`https://surmon.me/article/${this.article.id}`)
+          // console.log('要复制了', `https://huhuang.net/article/${this.article.id}`, this.$root.$copyToClipboard)
+          this.$root.$copyToClipboard(`https://huhuang.net/article/${this.article.id}`)
         }
       },
       buildThumb(thumb) {

@@ -12,27 +12,27 @@
     <div class="article-list">
       <transition name="module" mode="out-in">
         <transition-group name="fade" tag="div" v-if="article.data.data && article.data.data.length">
-          <list-item :key="index"
+          <list-item :key="item._id"
                      :article="item"
                      @click.native="toDetail(item)"
-                     v-for="(item, index) in article.data.data"></list-item>
+                     v-for="item in article.data.data"></list-item>
         </transition-group>
         <empty-box class="article-empty-box" v-else>
-          <slot>{{ $i18n.text.article.empty || 'No Result Article.' }}</slot>
+          <slot>{{ 'No Result Article.' }}</slot>
         </empty-box>
       </transition>
     </div>
 
     <!-- 加载更多 -->
     <div class="article-load">
-      <color-block-box :left="btnColorBlockLeft" border="left" color="red" />
+      <!-- <color-block-box :left="btnColorBlockLeft" border="left" color="red" /> -->
       <button class="btn-loadmore" @click="$emit('loadmore')" :disabled="article.fetching || !canLoadMore">
         <span class="icon">
           <i class="iconfont icon-peachblossom"></i>
         </span>
-        <span v-if="!article.fetching && canLoadMore" v-text="$i18n.text.article.loadmore"></span>
-        <span v-else-if="article.fetching && canLoadMore" v-text="$i18n.text.article.loading"></span>
-        <span v-else-if="!canLoadMore" v-text="$i18n.text.article.nomore"></span>
+        <span v-if="!article.fetching && canLoadMore" v-text="'加载更多'"></span>
+        <span v-else-if="article.fetching && canLoadMore" v-text="'加载中'"></span>
+        <span v-else-if="!canLoadMore" v-text="'没有更多了'"></span>
       </button>
     </div>
   </div>
