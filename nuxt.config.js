@@ -130,39 +130,39 @@ module.exports = {
         }
       }
     },
-    // optimization: {
-    //   splitChunks: {
-    //     cacheGroups: {
-    //       expansions: {
-    //         name: 'expansions',
-    //         test(module) {
-    //           return /swiper|233333|howler|lozad|marked|favico|rtcpeerconnection|webrtc|highlight/.test(module.context);
-    //         },
-    //         chunks: 'initial',
-    //         priority: 10,
-    //       },
-    //       vendors: {
-    //         test: /[\\/]node_modules[\\/]/,
-    //         priority: -10
-    //       },
-    //       default: {
-    //         minChunks: 2,
-    //         priority: -20,
-    //         reuseExistingChunk: true
-    //       },
-    //       // page -> 合并组件会导致运行异常
-    //       /*
-    //       page: {
-    //         name: 'page',
-    //         test: /\.(css|vue)$/,
-    //         chunks: 'all',
-    //         enforce: true,
-    //         priority: -20
-    //       }
-    //       */
-    //     }
-    //   }
-    // },
+    optimization: {
+      splitChunks: {
+        cacheGroups: {
+          expansions: {
+            name: 'expansions',
+            test(module) {
+              return /swiper|233333|howler|lozad|marked|favico|rtcpeerconnection|webrtc|highlight/.test(module.context);
+            },
+            chunks: 'initial',
+            priority: 10,
+          },
+          vendors: {
+            test: /[\\/]node_modules[\\/]/,
+            priority: -10
+          },
+          default: {
+            minChunks: 2,
+            priority: -20,
+            reuseExistingChunk: true
+          },
+          // page -> 合并组件会导致运行异常
+          /*
+          page: {
+            name: 'page',
+            test: /\.(css|vue)$/,
+            chunks: 'all',
+            enforce: true,
+            priority: -20
+          }
+          */
+        }
+      }
+    },
     extend(webpackConfig, { isDev, isClient }) {
       // 处理 Swiper4 下的 dom7 模块的语法问题
       webpackConfig.resolve.alias.dom7$ = 'dom7/dist/dom7.js'
