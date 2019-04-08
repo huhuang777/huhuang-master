@@ -19,7 +19,7 @@ module.exports = {
   /*
   ** Headers of the page
   */
-  dev: isProdMode,
+  dev: !isProdMode,
   env: {
     baseUrl: apiConfig.baseUrl,
     HOST_URL: apiConfig.socketHost
