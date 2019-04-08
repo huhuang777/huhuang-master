@@ -50,8 +50,8 @@ module.exports = {
       { rel: 'dns-prefetch', href: '//www.google-analytics.com' },
       { rel: 'dns-prefetch', href: '//tpc.googlesyndication.com' },
       { rel: 'dns-prefetch', href: '//pagead2.googlesyndication.com' },
-      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
-      { rel: 'author', type: 'text/plain', href: '/humans.txt' }
+      // { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+      // { rel: 'author', type: 'text/plain', href: '/humans.txt' }
     ],
     noscript: [
         { innerHTML: 'This website requires JavaScript.' }
@@ -121,7 +121,7 @@ module.exports = {
     */
     analyze: process.argv.join('').includes('analyze'), // 分析
     maxChunkSize: 360000, // 单个包最大尺寸
-    extractCSS: true, // 单独提取 css
+    // extractCSS: true, // 单独提取 css
     publicPath: apiConfig.cdnUrl + '/_nuxt/',
     postcss: {
       plugins: {

@@ -13,6 +13,7 @@ const server = new http.Server(app)
 // Import and Set Nuxt.js options
 const config = require('../nuxt.config.js')
 config.dev = !(app.env === 'production')
+debugger
 const updateGAScript = require('../utils/update-analytics')
 // 替换 console 为更统一友好的
 const { log, warn, info } = console

@@ -247,6 +247,7 @@ export const actions = {
     commit('article/REQUEST_LIST')
     return this.$axios.$get(`${API_PREFIX}/article`, { params })
       .then(response => {
+        debugger
         const success = resIsSuccess(response)
         const loadMore = params.page && params.page > 1
         const commitName =  `article/${loadMore ? 'ADD' : 'GET'}_LIST_SUCCESS`

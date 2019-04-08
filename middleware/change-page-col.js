@@ -7,7 +7,6 @@ export default async ({
   route,
   store
 }) => {
-
   // columns
   const fullColumn = ['about', 'project', 'sitemap'].includes(route.name)
   const errorColumn = ['music', 'app', 'service'].includes(route.name)
