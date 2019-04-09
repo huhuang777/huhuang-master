@@ -9,7 +9,7 @@
           <div class="swiper-slide item"  v-for="(article, index) in article.data.data.slice(0, 9)" :key="index">
             <div class="content">
               <img :src="buildThumb(article.thumb)" :alt="article.title">
-              <nuxt-link to="`/article/${article.id}`" class="title">
+              <nuxt-link :to="`/article/${article.id}`" class="title">
                 <span>{{ article.title }}</span>
               </nuxt-link>
             </div>

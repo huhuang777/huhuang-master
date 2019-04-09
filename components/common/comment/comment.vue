@@ -1,67 +1,100 @@
 <template>
-  <div class="comment-box" id="comment-box" :class="{ mobile: mobileLayout }">
-    <div class="tools">
-      <div class="total">
-        <div class="count">
-          <strong class="count">{{ comment.data.pagination.total || 23 }}</strong>
-          <span>&nbsp;</span>
-          <span>条评论</span>
-        </div>
-        <a href="" 
-           class="like" 
-           :class="{ liked: pageLiked }"
-           @click.stop.prevent="likePage">
-          <i class="iconfont icon-like"></i>
-          <strong>{{ likes || 0 }}</strong>
-          <span v-text="(mobileLayout && isGuestbookPage && language === 'zh') ? '人喜欢' : '人喜欢'"></span>
-        </a>
-        <!-- <a href="" class="shang" @click.stop.prevent="shang">
-          <i class="iconfont icon-shang"></i>
-        </a> -->
-      </div>
-      <div class="sort">
-        <a href="" 
-           class="sort-btn"
-           :class="{ actived: Object.is(sortMode, -1) }" 
-           @click.stop.prevent="sortComemnts(-1)"
-           >最新</a>
-        <a href="" 
-           class="sort-btn"
-           :class="{ actived: Object.is(sortMode, 2) }" 
-           @click.stop.prevent="sortComemnts(2)"
-           >最热</a>
-      </div>
-    </div>
+  <div class="comment-box" id="comment-box" :class="{ mobile: false }">
     <transition name="module" mode="out-in">
-      <div class="empty-box"
-           v-if="!comment.data.data.length && !comment.fetching"
-           >Go right to the heart of the matter.</div>
-      <loading-box v-else-if="comment.fetching"></loading-box>
-      <div class="list-box" v-else>
-        <transition-group name="fade" tag="ul" class="comment-list">
-          <li class="comment-item" 
-              :id="`comment-item-${comment.id}`" 
-              :key="comment.id"
-              v-for="comment in comment.data.data">
-            <div class="cm-avatar" v-if="!mobileLayout">
-              <a target="_blank"
-                 rel="external nofollow noopener"
-                 :href="comment.author.site" 
-                 @click.stop="clickUser($event, comment.author)">
-                <img :alt="comment.author.name"
-                     :src="gravatar(comment.author.email) || `${cdnUrl}/images/anonymous.jpg`">
+      <div class="tools" key="skeleton" v-if="fetching">
+        <div class="total-skeleton">
+          <skeleton-line class="count-skeleton" />
+          <skeleton-line class="like-skeleton" />
+        </div>
+        <div class="sort-skeleton">
+          <skeleton-line />
+        </div>
+      </div>
+      <div class="tools" key="tools" v-else>
+        <div class="total">
+          <div class="count">
+            <strong class="count">{{ comment.pagination.total || 0 }}</strong>
+            <span v-text="'条看法'"></span>
+          </div>
+          <a href class="like" :class="{ liked: isLikedPage }" @click.stop.prevent="likePage">
+            <i class="iconfont icon-like"></i>
+            <strong>{{ likes || 0 }}</strong>
+            <span v-text="'人喜欢'"></span>
+          </a>
+          <a href class="shang" @click.stop.prevent="shang">
+            <i class="iconfont icon-shang"></i>
+          </a>
+        </div>
+        <div class="sort">
+          <a
+            href
+            class="sort-btn"
+            :class="{ actived: Object.is(sortMode, constants.SortType.Desc) }"
+            @click.stop.prevent="sortComemnts(constants.SortType.Desc)"
+            v-text="'最新'"
+          >最新</a>
+          <a
+            href
+            class="sort-btn"
+            :class="{ actived: Object.is(sortMode, constants.SortType.Hot) }"
+            @click.stop.prevent="sortComemnts(constants.SortType.Hot)"
+            v-text="'最热'"
+          >最热</a>
+        </div>
+      </div>
+    </transition>
+    <transition name="module" mode="out-in" @after-enter="loadCommentsAnimateDone">
+      <div class="list-box list-skeleton" key="skeleton" v-if="isFetching">
+        <ul class="comment-list">
+          <li class="comment-item" :key="item" v-for="item in 5">
+            <div class="gravatar">
+              <skeleton-base />
+            </div>
+            <div class="content">
+              <skeleton-paragraph :lines="4" />
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div
+        key="empty"
+        class="empty-box"
+        v-else-if="!comment.data[0]"
+        v-text="'期待你的捷足先登'"
+      ></div>
+      <div class="list-box" key="list" ref="commentList" v-else>
+        <transition-group name="fade" tag="ul" class="comment-list" @after-enter="addCommentAnimateDone">
+          <li
+            class="comment-item"
+            :id="`comment-item-${comment.id}`"
+            :key="comment.id"
+            v-for="comment in comment.data"
+          >
+            <div class="cm-avatar">
+              <a
+                target="_blank"
+                rel="external nofollow noopener"
+                :href="comment.author.site"
+                @click.stop="clickUser($event, comment.author)"
+              >
+                <img
+                  :alt="comment.author.name ||'匿名用户'"
+                  :src="gravatar(comment.author.email) || `${cdnUrl}/images/anonymous.jpg`"
+                >
               </a>
             </div>
             <div class="cm-body">
               <div class="cm-header">
-                <a class="user-name" 
-                   target="_blank" 
-                   rel="external nofollow noopener"
-                   :href="comment.author.site" 
-                   @click.stop="clickUser($event, comment.author)">{{ comment.author.name | firstUpperCase }}</a>
+                <a
+                  class="user-name"
+                  target="_blank"
+                  rel="external nofollow noopener"
+                  :href="comment.author.site"
+                  @click.stop="clickUser($event, comment.author)"
+                >{{ comment.author.name | firstUpperCase }}</a>
                 <span class="os" v-html="osParse(comment.agent)" v-if="comment.agent"></span>
                 <span class="ua" v-html="browserParse(comment.agent)" v-if="comment.agent"></span>
-                <span class="location" v-if="comment.ip_location && !mobileLayout">
+                <span class="location" v-if="comment.ip_location && !isMobile">
                   <span>{{ comment.ip_location.country }}</span>
                   <span v-if="comment.ip_location.country && comment.ip_location.city">&nbsp;-&nbsp;</span>
                   <span>{{ comment.ip_location.city }}</span>
@@ -72,7 +105,7 @@
                 <p class="reply" v-if="!!comment.pid">
                   <span>回复</span>
                   <span>&nbsp;</span>
-                  <a href="" @click.stop.prevent="toSomeAnchorById(`comment-item-${comment.pid}`)">
+                  <a href @click.stop.prevent="toSomeAnchorById(`comment-item-${comment.pid}`)">
                     <span>#{{ comment.pid }}&nbsp;</span>
                     <strong v-if="fondReplyParent(comment.pid)">@{{ fondReplyParent(comment.pid) }}</strong>
                   </a>
@@ -82,14 +115,16 @@
               </div>
               <div class="cm-footer">
                 <span class="create_at">{{ comment.create_at | timeAgo(language) }}</span>
-                <a href="" class="reply" @click.stop.prevent="replyComment(comment)">
+                <a href class="reply" @click.stop.prevent="replyComment(comment)">
                   <i class="iconfont icon-reply"></i>
                   <span>回复</span>
                 </a>
-                <a href="" 
-                   class="like" 
-                   :class="{ liked: commentLiked(comment.id), actived: !!comment.likes }"
-                   @click.stop.prevent="likeComment(comment)">
+                <a
+                  href
+                  class="like"
+                  :class="{ liked: getCommentLiked(comment.id), actived: !!comment.likes }"
+                  @click.stop.prevent="likeComment(comment)"
+                >
                   <i class="iconfont icon-zan"></i>
                   <span>顶</span>
                   <span>&nbsp;({{ comment.likes }})</span>
@@ -101,38 +136,42 @@
       </div>
     </transition>
     <transition name="module">
-      <div class="pagination-box" v-if="comment.data.pagination.total_page > 1">
-        <ul class="pagination-list" v-if="Object.is(sortMode, 2)">
-          <li class="item" :key="index" v-for="(item, index) in comment.data.pagination.total_page">
-            <a href="" 
-               class="pagination-btn" 
-               :class="{ 'actived disabled': Object.is(item, comment.data.pagination.current_page) }"
-               @click.stop.prevent="Object.is(item, comment.data.pagination.current_page) 
+      <div class="pagination-box" v-if="!isFetching && comment.pagination.total_page > 1">
+        <ul class="pagination-list" v-if="Object.is(sortMode, constants.SortType.Hot)">
+          <li class="item" :key="index" v-for="(item, index) in comment.pagination.total_page">
+            <a
+              href
+              class="pagination-btn"
+              :class="{ 'actived disabled': Object.is(item, comment.pagination.current_page) }"
+              @click.stop.prevent="Object.is(item, comment.pagination.current_page) 
                ? false 
-               : loadComemntList({ page: item })">{{ item }}</a>
+               : loadComemntList({ page: item })"
+            >{{ item }}</a>
           </li>
         </ul>
         <ul class="pagination-list" v-else>
           <li class="item">
-            <a href="" class="pagination-btn prev disabled" @click.stop.prevent>
-              <span>— </span>
+            <a href class="pagination-btn prev disabled" @click.stop.prevent>
+              <span>—</span>
               <span>old</span>
             </a>
           </li>
-          <li class="item" :key="index" v-for="(item, index) in comment.data.pagination.total_page">
-            <a href="" 
-               class="pagination-btn" 
-               :class="{ 'actived disabled': paginationReverseActive(item) }"
-               @click.stop.prevent="paginationReverseActive(item)
-                  ? false 
-                  : loadComemntList({ 
-                      page: comment.data.pagination.total_page + 1 - item 
-                  })">{{ item }}</a>
+          <li class="item" :key="index" v-for="(item, index) in comment.pagination.total_page">
+            <a
+              href
+              class="pagination-btn"
+              :class="{ 'actived disabled': paginationReverseActive(item) }"
+              @click.stop.prevent="paginationReverseActive(item)
+                ? false 
+                : loadComemntList({ 
+                    page: comment.pagination.total_page + 1 - item 
+                })"
+            >{{ item }}</a>
           </li>
           <li class="item">
-            <a href="" class="pagination-btn next disabled" @click.stop.prevent>
+            <a href class="pagination-btn next disabled" @click.stop.prevent>
               <span>new</span>
-              <span> —</span>
+              <span>—</span>
             </a>
           </li>
         </ul>
@@ -141,33 +180,39 @@
     <form class="post-box" name="comment" id="post-box">
       <!-- 用户编辑部分 -->
       <transition name="module" mode="out-in">
-        <div class="user" v-if="!userCacheMode || userCacheEditing">
+        <div class="user" key="edit" v-if="!userCacheMode || userCacheEditing">
           <div class="name">
-            <input required
-                   type="text" 
-                   name="name"
-                   :class="language"
-                   autocomplete="on"
-                   :placeholder="'名字' + ' *'"
-                   v-model="user.name">
+            <input
+              required
+              type="text"
+              name="name"
+              autocomplete="on"
+              :class="language"
+              :placeholder="'名字 *'"
+              v-model="user.name"
+            >
           </div>
           <div class="email">
-            <input required
-                   type="email" 
-                   name="email"
-                   :class="language"
-                   :placeholder="'邮箱' + ' *'"
-                   autocomplete="on"
-                   v-model="user.email" 
-                   @blur="upadteUserGravatar">
+            <input
+              required
+              type="email"
+              name="email"
+              autocomplete="on"
+              :class="language"
+              :placeholder="'邮箱 *'"
+              v-model="user.email"
+              @blur="upadteUserGravatar"
+            >
           </div>
           <div class="site">
-            <input type="url"
-                   name="url"
-                   :class="language"
-                   autocomplete="on"
-                   :placeholder="'网址'"
-                   v-model="user.site">
+            <input
+              type="url"
+              name="url"
+              autocomplete="on"
+              :class="language"
+              :placeholder="'网址'"
+              v-model="user.site"
+            >
           </div>
           <div class="save" v-if="userCacheEditing">
             <button type="submit" @click="updateUserCache($event)">
@@ -176,17 +221,17 @@
           </div>
         </div>
         <!-- 用户设置部分 -->
-        <div class="user" v-else-if="userCacheMode && !userCacheEditing">
+        <div class="user" key="user" v-else-if="userCacheMode && !userCacheEditing">
           <div class="edit">
             <strong class="name">{{ user.name | firstUpperCase }}</strong>
-            <a href="" class="setting" @click.stop.prevent>
+            <a href class="setting" @click.stop.prevent>
               <i class="iconfont icon-setting"></i>
               <span class="account-setting">账户设置</span>
               <ul class="user-tool">
-                <li @click.stop.prevent="userCacheEditing = true"
-                    >编辑信息</li>
-                <li @click.stop.prevent="claerUserCache"
-                   >清空信息</li>
+                <li
+                  @click.stop.prevent="userCacheEditing = true"
+                >编辑信息</li>
+                <li @click.stop.prevent="claerUserCache">清空信息</li>
               </ul>
             </a>
           </div>
@@ -194,67 +239,73 @@
       </transition>
       <div class="editor-box">
         <div class="user">
-          <div class="gravatar" v-if="!mobileLayout">
-            <img :alt="user.name"
-                 :src="user.gravatar || `${cdnUrl}/images/anonymous.jpg`">
+          <div class="gravatar" v-if="!isMobile">
+            <img
+              :alt="user.name || '匿名用户'"
+              :src="user.gravatar || `${cdnUrl}/images/anonymous.jpg`"
+            >
           </div>
         </div>
         <div class="editor">
           <transition name="module">
-            <div class="will-reply" v-if="!!pid">
+            <div class="will-reply" key="reply" v-if="!!pid">
               <div class="reply-user">
                 <span>
-                  <span >回复</span>
+                  <span>回复</span>
                   <span>&nbsp;</span>
-                  <a href="" @click.stop.prevent="toSomeAnchorById(`comment-item-${replyCommentSlef.id}`)">
+                  <a href @click.stop.prevent="toSomeAnchorById(`comment-item-${replyCommentSlef.id}`)">
                     <strong>#{{ replyCommentSlef.id }} @{{ replyCommentSlef.author.name }}：</strong>
                   </a>
                 </span>
-                <a href="" class="cancel iconfont icon-cancel" @click.stop.prevent="cancelCommentReply"></a>
+                <a href class="cancel iconfont icon-cancel" @click.stop.prevent="cancelCommentReply"></a>
               </div>
               <div class="reply-preview" v-html="marked(replyCommentSlef.content)"></div>
             </div>
           </transition>
           <div class="markdown">
-            <div class="markdown-editor" 
-                 ref="markdown"
-                 contenteditable="true"
-                 :placeholder="'您的留言'"
-                 @keyup="commentContentChange($event)">
-            </div>
-            <div class="markdown-preview" 
-                 :class="{ actived: previewMode }"
-                 v-html="previewContent"></div>
+            <div
+              class="markdown-editor"
+              ref="markdown"
+              contenteditable="true"
+              :placeholder="'愿你的见解一针见血'"
+              @keyup="commentContentChange($event)"
+            ></div>
+            <div class="markdown-preview" :class="{ actived: previewMode }" v-html="previewContent"></div>
           </div>
           <div class="editor-tools">
-            <a href="" class="emoji" title="emoji" @click.stop.prevent>
+            <a href class="emoji" title="emoji" @click.stop.prevent>
               <i class="iconfont icon-emoji"></i>
               <div class="emoji-box">
                 <ul class="emoji-list">
-                  <li class="item"
-                      :key="index"
-                      @click="insertEmoji(emoji)"
-                      v-for="(emoji, index) in emojis">{{ emoji }}</li>
+                  <li
+                    class="item"
+                    :key="index"
+                    @click="insertEmoji(emoji)"
+                    v-for="(emoji, index) in emojis"
+                    v-text="emoji"
+                  ></li>
                 </ul>
               </div>
             </a>
-            <a href="" class="image" title="image" @click.stop.prevent="insertContent('image')">
+            <a href class="image" title="image" @click.stop.prevent="insertContent('image')">
               <i class="iconfont icon-image"></i>
             </a>
-            <a href="" class="link" title="link" @click.stop.prevent="insertContent('link')">
-              <i class="iconfont icon-link-horizontal"></i>
+            <a href class="link" title="link" @click.stop.prevent="insertContent('link')">
+              <i class="iconfont icon-icon-iconfontlianjie"></i>
             </a>
-            <a href="" class="code" title="code" @click.stop.prevent="insertContent('code')">
-              <i class="iconfont icon-code-comment"></i>
+            <a href class="code" title="code" @click.stop.prevent="insertContent('code')">
+              <i class="iconfont icon-code"></i>
             </a>
-            <a href="" class="preview" title="preview" @click.stop.prevent="togglePreviewMode">
+            <a href class="preview" title="preview" @click.stop.prevent="togglePreviewMode">
               <i class="iconfont icon-eye"></i>
             </a>
-            <button type="submit" 
-                    class="submit" 
-                    :disabled="comment.posting"
-                    @click="submitComment($event)">
-              <span>{{ comment.posting ? '正在发表...' : '发表' }}</span>
+            <button
+              type="submit"
+              class="submit"
+              :disabled="commentPosting || isFetching"
+              @click="submitComment($event)"
+            >
+              <span v-text="commentPosting ? '发射中...' : '发射'"></span>
             </button>
           </div>
         </div>
@@ -265,28 +316,46 @@
 
 <script>
   import { mapState } from 'vuex'
+  import { isBrowser } from '~/environment'
   import marked from '~/plugins/marked'
   import gravatar from '~/plugins/gravatar'
+  import stateConstants from '~/constants/state'
   import { scrollTo } from '~/utils/scroll-to-anywhere'
   import { browserParse, osParse } from '~/utils/ua-os-browser'
+  import { isArticleDetailRoute, isGuestbookRoute } from '~/utils/route'
   import { localUser, localHistoryLikes } from '~/utils/local-storage'
-  
   export default {
     name: 'vue-comment',
+    props: {
+      fetching: {
+        type: Boolean,
+        default: false
+      },
+      likes: {
+        type: Number,
+      },
+      postId: {
+        type: Number,
+        required: true
+      }
+    },
     data() {
       return {
+        lozadObserver: null,
         // 父级评论
         pid: 0,
         // 评论排序
         sortMode: -1,
         // 编辑器相关
         comemntContentHtml: '',
+        isMobile:false,
         comemntContentText: '',
         previewContent: '',
         previewMode: false,
         // 用户相关
         userCacheMode: false,
         userCacheEditing: false,
+        language:"zh",
         user: {
           name: '',
           email: '',
@@ -305,48 +374,87 @@
         emojis: ['😃', '😂', '😅', '😉', '😌', '😔', '😓', '😢', '😍', '😘', '😜', '😡', '😤', '😭', '😱', '😳', '😵', '🌚', '🙏', '👆', '👇', '👌', '🤘', '👍', '👎', '💪', '👏', '🌻', '🌹', '💊', '🇨🇳', '🇺🇸', '🇯🇵 ', '🚩', '🐶', '❤️', '💔', '💩', '👻']
       }
     },
-    props: {
-      likes: {
-        type: [String, Number],
-        required: true
-      },
-      postId: {
-        type: [String, Number],
-        required: true
-      }
-    },
     computed: {
       ...mapState({
-        comment: state => state.comment,
-        language: state => state.option.language,
-        mobileLayout: state => state.option.mobileLayout,
-        blacklist: state => state.option.globalOption.data.blacklist,
+        comment: state => state.comment.data,
+        commentFetching: state => state.comment.fetching,
+        commentPosting: state => state.comment.posting,
+        constants: state => stateConstants,
+        blacklist: state => state.option.globalOption.data?state.option.globalOption.data.blacklist:[],
       }),
-      pageLiked() {
-        return this.historyLikes.pages.includes(this.postId)
+      isFetching() {
+        // 1. 宿主组件还在加载时，列表和 tool 都呈加载状态
+        // 2. 宿主组件加载完成，如果自己还在请求，则列表呈加载状态
+        // 3. 自己已请求完，宿主组件还在加载，列表和 tool 都呈加载状态
+        return this.fetching || this.commentFetching
+      },
+      isEnLang() {
+        return this.$store.getters['global/isEnLang']
+      },
+      isLikedPage() {
+        return this.historyLikes.pages&&this.historyLikes.pages.includes(this.postId)
       },
       isArticlePage() {
         return this.$route.params.article_id
       },
       isGuestbookPage() {
-        return Object.is(this.$route.name, 'guestbook')
+        return isGuestbookRoute(this.$route.name)
       },
       replyCommentSlef() {
-        return this.comment.data.data.find(comment => Object.is(comment.id, this.pid))
+        return this.comment.data.find(comment => Object.is(comment.id, this.pid))
       }
     },
     mounted() {
-      this.initUser()
-      if (!this.comment.data.pagination.total_page) {
-        this.loadComemntList()
+     // this.initAppOptionBlackList()
+      if (isBrowser) {
+        this.observeLozad()
       }
     },
+    activated() {
+      this.initUser()
+      // 1. 组件不再负责初始加载评论列表数据的职责
+      // 2. 组件仅负责初评论列表数据翻页、排序的职责
+      // 3. 当容器组件还在请求时，组件全量 Loading
+      // 4. 当只有评论列表在请求时，列表单独 Loading
+    },
     destroyed() {
+      this.$store.commit('comment/CLEAR_LIST')
+    },
+    deactivated() {
+      this.lozadObserver = null
       this.$store.commit('comment/CLEAR_LIST')
     },
     methods: {
       browserParse,
       osParse,
+      // 初始化本地用户即本地用户的点赞历史
+      initUser() {
+        const user = localUser.get()
+        const historyLikes = localHistoryLikes.get()
+        historyLikes && (this.historyLikes = historyLikes)
+        if (user) {
+          this.user = user
+          this.upadteUserGravatar()
+          this.userCacheMode = true
+        }
+      },
+      loadCommentsAnimateDone() {
+        this.observeLozad()
+      },
+      addCommentAnimateDone() {
+        this.observeLozad()
+      },
+      observeLozad() {
+        const listElement = this.$refs.commentList
+        const lozadElements = listElement && listElement.querySelectorAll('.lozad')
+        if (!lozadElements || !lozadElements.length) {
+          return false
+        }
+        this.lozadObserver = lozad(lozadElements, {
+          loaded: element => element.classList.add('loaded')
+        })
+        this.lozadObserver.observe()
+      },
       shang() {
         this.$ga.event('内容赞赏', '点击', 'tool')
         window.utils.openImgPopup(`${this.cdnUrl}/images/shang.jpg`, 'shang')
@@ -359,32 +467,18 @@
       gravatar(email) {
         if (!this.regexs.email.test(email)) return null
         const gravatar_url = gravatar.url(email, { 
-          // size: '96', 
-          // rating: 'pg',
-          // default: 'https://gravatar.surmon.me/anonymous.jpg', 
           protocol: 'https'
         });
-        return gravatar_url.replace('https://s.gravatar.com/avatar', 'https://gravatar.huhuang.me')
-      },
-      // 初始化本地用户即本地用户的点赞历史
-      initUser() {
-        const user = localUser.get()
-        const historyLikes = localHistoryLikes.get()
-        historyLikes && (this.historyLikes = historyLikes)
-        if (user) {
-          this.user = user
-          this.upadteUserGravatar()
-          this.userCacheMode = true
-        }
+        return gravatar_url
       },
       // 更新用户数据
       updateUserCache(event) {
         event.preventDefault()
         if (!this.user.name) {
-          return alert('名字?')
+          return alert('名字' + '?')
         }
         if (!this.user.email) {
-          return alert('邮箱?')
+          return alert('邮箱' + '?')
         }
         if (!this.regexs.email.test(this.user.email)) {
           return alert('邮箱不合法')
@@ -466,14 +560,14 @@
       },
       // 评论排序
       sortComemnts(sort) {
-        if (!Object.is(this.sortMode, sort)) {
+        if (this.sortMode !== sort) {
           this.sortMode = sort
           this.loadComemntList()
         }
       },
       // 翻页反向计算
       paginationReverseActive(index) {
-        const pagination = this.comment.data.pagination
+        const pagination = this.comment.pagination
         return Object.is(index, pagination.total_page + 1 - pagination.current_page)
       },
       // 点击用户
@@ -509,40 +603,42 @@
       },
       // 找到回复来源
       fondReplyParent(comment_id) {
-        const parent = this.comment.data.data.find(comment => Object.is(comment.id, comment_id))
+        const parent = this.comment.data.find(comment => Object.is(comment.id, comment_id))
         return parent ? parent.author.name : null
       },
       // 喜欢当前页面
       likePage() {
-        if (this.pageLiked) return false
+        if (this.isLikedPage) {
+          return false
+        }
         this.$store.dispatch('likeArticleOrPageOrComment', { type: 2, id: this.postId })
         .then(data => {
           this.historyLikes.pages.push(this.postId)
-          localHistoryLikes.set(this.historyLikes)
+          localStorage.setItem('user_like_history', JSON.stringify(this.historyLikes))
         })
         .catch(err => {
           console.warn('喜欢失败', err)
-          alert("操作失败，原因 => 控制台")
+          alert('操作失败，原因 -> 控制台')
         })
       },
       // 点赞某条评论
       likeComment(comment) {
-        if (this.commentLiked(comment.id)) return false
+        if (this.getCommentLiked(comment.id)) return false
         this.$store.dispatch('likeArticleOrPageOrComment', { type: 1, id: comment.id })
         .then(data => {
           this.historyLikes.comments.push(comment.id)
-          localHistoryLikes.set(this.historyLikes)
+          localStorage.setItem('user_like_history', JSON.stringify(this.historyLikes))
         })
         .catch(err => {
           console.warn('评论点赞失败', err)
-          alert("操作失败，原因 => 控制台")
+          alert('操作失败，原因 -> 控制台')
         })
       },
       // 获取某条评论是否被点赞
-      commentLiked(comment_id) {
-        return this.historyLikes.comments.includes(comment_id)
+      getCommentLiked(comment_id) {
+        return this.historyLikes.comments&&this.historyLikes.comments.includes(comment_id)
       },
-      // 获取评论列表
+       // 获取评论列表
       loadComemntList(params = {}) {
         params.sort = this.sortMode
         this.$store.dispatch('loadCommentsByPostId', Object.assign(params, { post_id: this.postId }))
@@ -552,31 +648,31 @@
         // 为了使用原生表单拦截，不使用事件修饰符
         event.preventDefault()
         if (!this.user.name) {
-          return alert('名字?')
+          return alert('名字' + '?')
         }
         if (!this.user.email) {
-          return alert('邮箱?')
+          return alert('邮箱' + '?')
         }
         if (!this.regexs.email.test(this.user.email)) {
-          return alert("邮箱不合法")
+          return alert('邮箱不合法')
         }
         if (this.user.site && !this.regexs.url.test(this.user.site)) {
-          return alert("网址不合法")
+          return alert('网址不合法')
         }
         if (!this.comemntContentText || !this.comemntContentText.replace(/\s/g, '')) {
-          return alert('内容?')
+          return alert('内容' + '?')
         }
         const lineOverflow = this.comemntContentText.split('\n').length > 36
         const lengthOverflow = this.comemntContentText.length > 2000
         if (lineOverflow || lengthOverflow) {
-          return alert('内容需要在2000字/36行以内')
+          return alert('内容需要在 2000字/36行 以内')
         }
         // 使用服务单配置的黑名单在本地校验邮箱和关键字
-        if (this.blacklist.mails.includes(this.user.email) || 
-           (this.blacklist.keywords.length && 
+        if (this.blacklist.mails&&this.blacklist.mails.includes(this.user.email) || 
+           (this.blacklist.keywords&&this.blacklist.keywords.length && 
             eval(`/${this.blacklist.keywords.join('|')}/ig`).test(this.comemntContentText))) {
-          alert('发布失败，原因 => 控制台')
-          console.warn('评论发布失败\n1：邮箱被列入黑名单\n2：内容包含黑名单关键词')
+          alert('发布失败，原因 -> 控制台')
+          console.warn('评论发布失败\n1：被 Akismet 过滤\n2：邮箱/IP 被列入黑名单\n3：内容包含黑名单关键词')
           return false
         }
         if (!this.user.site) {
@@ -591,14 +687,47 @@
         }).then(data => {
           // 发布成功后清空评论框内容并更新本地信息
           const content = data.result.content
+          const emoji233333 = this.$root.$emoji233333
+          if (emoji233333 && emoji233333.launch) {
+            // 为表情做一次缓冲
+            const preImage = (url, callback) => {
+              const img = new Image()
+              img.src = url
+              if (img.complete) return callback(img)
+              img.onload = () => callback(img)
+            }
+            if (content.includes('2333') || content.includes('哈哈')) {
+              const emoji = emoji233333.defaultEmoji
+              emoji233333.update({
+                emoji,
+                speed: 12,
+                staggered: true,
+                increaseSpeed: 0.4,
+              })
+              preImage(emoji, emoji233333.launch.bind(emoji233333))
+            } else if (content.includes('666')) {
+              const emoji = '/images/emojis/666.png'
+              emoji233333.update({
+                emoji,
+                speed: 12,
+                staggered: true,
+                increaseSpeed: 0.4
+              })
+              preImage(emoji, emoji233333.launch.bind(emoji233333))
+            } else if (content.includes('呵呵')) {
+              const emoji = '/images/emojis/hehe.png'
+              emoji233333.update({ emoji, staggered: false, speed: 8, increaseSpeed: 0.04 })
+              preImage(emoji, emoji233333.launch.bind(emoji233333))
+            }
+          }
           this.previewMode = false
           this.userCacheMode = true
           this.cancelCommentReply()
           this.clearCommentContent()
           localUser.set(this.user)
-        }).catch(err => {
-          console.warn('评论发布失败', err)
-          alert('submiterr')
+        }).catch(error => {
+          console.warn('评论发布失败，可能原因：被 Akismet 过滤，或者：\n', error)
+          alert('发布失败，原因 -> 控制台')
         })
       }
     }
@@ -622,6 +751,7 @@
       margin: .5rem 0;
       max-width: 100%;
       border-radius: 2px;
+      cursor: pointer;
     }
 
     p {
@@ -745,6 +875,30 @@
       border-bottom: 1px solid $module-hover-bg;
       margin-bottom: .6em;
 
+      .count-skeleton,
+      .like-skeleton,
+      .sort-skeleton {
+        height: 2rem;
+      }
+      
+      .total-skeleton {
+        display: flex;
+        width: 70%;
+
+        .count-skeleton {
+          width: 20%;
+          margin-right: 1rem;
+        }
+
+        .like-skeleton {
+          width: 40%;
+        }
+      }
+      
+      .sort-skeleton {
+        width: 20%;
+      }
+
       > .total {
         display: flex;
         font-size: 1em;
@@ -761,7 +915,7 @@
             background: $primary-opacity-9;
           }
           50% {
-            background: rgba(#50a849, .8);
+            background: rgba($accent, .8);
           }
           100% {
             background: $primary-opacity-9;
@@ -778,7 +932,7 @@
           margin-left: .5em;
 
           > .iconfont {
-            margin-right: .5em;
+            margin-right: .5rem;
           }
 
           &:hover {
@@ -803,6 +957,25 @@
             color: $black;
             font-weight: bold;
           }
+        }
+      }
+    }
+
+    > .list-skeleton {
+
+      .comment-item {
+        padding-left: 0!important;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+
+        .gravatar {
+          width: 5rem;
+          height: 5rem;
+        }
+
+        .content {
+          width: calc((100% - 5rem) * 0.9);
         }
       }
     }
@@ -921,7 +1094,7 @@
 
             > .cm-footer {
               display: flex;
-
+              align-items:center;
               > .create_at,
               > .reply,
               > .like {
@@ -1283,7 +1456,7 @@
             > .code,
             > .preview {
               width: 2em;
-              height: 2em;
+              //height: 2em;
               text-align: center;
               display: inline-block;
 

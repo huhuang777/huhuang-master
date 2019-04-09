@@ -130,7 +130,7 @@ export const actions = {
       .then(response => {
         resIsSuccess(response)
           ? commit('article/GET_HOT_LIST_SUCCESS', getResData(response))
-          : commit('article/GET_HOT_LIST_FAILURE')
+          : commit('article/GET_HOT_LIST_FAILURE');
       })
       .catch(err => {
         commit('article/GET_HOT_LIST_FAILURE', err)
@@ -146,10 +146,10 @@ export const actions = {
       per_page: 88
     }, params)
     
-    if (params.page === 1) {
-      commit('comment/CLEAR_LIST')
-    }
-
+    // if (params.page === 1) {
+    //   commit('comment/CLEAR_LIST')
+    // }
+    commit('comment/CLEAR_LIST')
     commit('comment/REQUEST_LIST')
     return this.$axios.$get(`${API_PREFIX}/comment`, { params })
       .then(response => {

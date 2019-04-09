@@ -9,12 +9,13 @@
       </div>
     </div>
     <div class="comment">
-      <comment-box :post-id="0" :likes="22" />
+      <comment-box :post-id="0" :likes="siteLikes"/>
     </div>
   </div>
 </template>
 
 <script>
+  import { mapState } from 'vuex'
   export default {
     name: 'guestbook',
     head() {
@@ -22,7 +23,16 @@
         title: `${this.langIsEn ? '' : '留言墙' + ' | '}Guestbook`
       }
     },
+    fetch({ store }) {
+      return Promise.all([
+        store.dispatch('loadCommentsByPostId', { post_id: 0 }),
+        store.dispatch('loadGlobalOption')
+      ])
+    },
     computed: {
+      ...mapState({
+        siteLikes:state=>state.option.globalOption.data?state.option.globalOption.data.meta.likes:0
+      }),
       langIsEn() {
         return this.$store.getters['option/langIsEn']
       },

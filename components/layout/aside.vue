@@ -5,15 +5,15 @@
         <i class="iconfont icon-hotfill"></i>
         <span>热门文章</span>
       </p>
-      <!-- <empty-box v-if="false">
-        <slot>{{ $i18n.text.article.empty || 'No Result Hot Articles.' }}</slot>
-      </empty-box> -->
-      <ul class="aside-article-list">
-        <li class="item" :key="item.id" v-for="item in article">
+      <empty-box v-if="!articles.length>0">
+        <slot>{{ 'No Result Hot Articles.' }}</slot>
+      </empty-box>
+      <ul class="aside-article-list" v-else>
+        <li class="item" :key="item.id" v-for="item in articles">
           <span class="index"></span>
           <nuxt-link class="title" 
-                     :to="`/article/${item.id}`"
-                     :title="`${item.title} - 「 ${item.meta.comments} 条看法 | ${item.meta.likes} 人喜欢这篇文章」`">
+            :to="`/article/${item.id}`"
+            :title="`${item.title} - 「 ${item.meta.comments} 条看法 | ${item.meta.likes} 人喜欢这篇文章」`">
             <span>{{ item.title }}</span>
           </nuxt-link>
         </li>
@@ -24,15 +24,15 @@
     </div>
     <div class="aside-fixed-box" :class="{ fixed: fixedMode.fixed }" v-scroll-top>
       <div class="aside-tag">
-        <empty-box v-if="!tag.fetching && !tag.data">
+        <empty-box v-if="!tags.length">
           <slot>{{'No Result Tags.' }}</slot>
         </empty-box>
-        <ul class="aside-tag-list" v-else-if="!tag.fetching && tag.data">
+        <ul class="aside-tag-list" v-else>
           <nuxt-link tag="li"
-                     class="item"
-                     :key="index"
-                     :to="`/tag/${item.slug}`"
-                     v-for="(item, index) in tag.data">
+            class="item"
+            :key="index"
+            :to="`/tag/${item.slug}`"
+            v-for="(item, index) in tags">
             <a class="title" :title="item.name">
               <i class="iconfont" 
                  :class="[item.extends.find(t => Object.is(t.name, 'icon')).value]" 
@@ -61,74 +61,6 @@
           element: null,
           sidebarFixedOffsetTop: 0
         },
-        article:[{
-          id:0,
-          title:"Git入门到放弃",
-          meta:{
-            comments:20,
-            likes:390
-          }
-        },{
-          id:1,
-          title:"Git入门到放弃",
-          meta:{
-            comments:20,
-            likes:390
-          }
-        },{
-          id:2,
-          title:"Git入门到放弃",
-          meta:{
-            comments:20,
-            likes:390
-          }
-        },{
-          id:3,
-          title:"Git入门到放弃",
-          meta:{
-            comments:20,
-            likes:390
-          }
-        },{
-          id:4,
-          title:"Git入门到放弃",
-          meta:{
-            comments:20,
-            likes:390
-          }
-        },{
-          id:5,
-          title:"Git入门到放弃",
-          meta:{
-            comments:20,
-            likes:390
-          }
-        },{
-          id:6,
-          title:"Git入门到放弃",
-          meta:{
-            comments:20,
-            likes:390
-          }
-        },{
-          id:7,
-          title:"Git入门到放弃",
-          meta:{
-            comments:20,
-            likes:390
-          }
-        }],
-        tag:{
-          fetching:false,
-          data:[{
-            name:"typrScript",
-            count:22,
-            extends:[{
-              name:"icon",
-              value:"icon-hotfill"
-            }]
-          }]
-        }
       }
     },
     components: {
@@ -140,9 +72,10 @@
       }
     },
     computed: {
-      isArticlePage() {
-        return this.$route.name === 'article-article_id'
-      }
+      ...mapState({
+        tags: state => state.tag.data.data,
+        articles: state => state.article.hot.data.data
+      }),
     },
     methods: {
       toSearch() {

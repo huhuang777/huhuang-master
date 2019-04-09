@@ -27,14 +27,14 @@
         <div class="navbar-right">
           <div class="search-box">
             <input id="keyword" 
-                   required 
-                   list="keywords"
-                   type="search" 
-                   name="search" 
-                   class="search-input"
-                   :placeholder="'搜索文章'"
-                   v-model.trim="keyword"
-                   @keyup.enter="toSearch">
+              required 
+              list="keywords"
+              type="search" 
+              name="search" 
+              class="search-input"
+              :placeholder="'搜索文章'"
+              v-model.trim="keyword"
+              @keyup.enter="toSearch">
             <button class="search-btn" @click="toSearch">
               <i class="iconfont icon-search"></i>
             </button>
@@ -46,6 +46,8 @@
 </template>
 
 <script>
+import { Route } from '~/constants/system'
+import { isArticleDetailRoute, isSearchArchiveRoute } from '~/utils/route'
 export default {
   name: 'layout-header',
   data() {
@@ -54,9 +56,20 @@ export default {
       keyword: ''
     }
   },
-  mounted() {},
+  mounted() {
+    if (isSearchArchiveRoute(this.$route.name)) {
+      this.keyword = this.$route.params.keyword
+    }
+  },
   methods: {
-    toSearch() {}
+    toSearch() {
+      const keyword = this.keyword
+      const paramsKeyword = this.$route.params.keyword
+      const isSearchPage = isSearchArchiveRoute(this.$route.name)
+      if (keyword && (isSearchPage ? (paramsKeyword !== keyword) : true)) {
+        this.$router.push({ name: Route.SearchArchive, params: { keyword }})
+      }
+    }
   }
 }
 </script>

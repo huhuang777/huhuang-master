@@ -3,10 +3,10 @@
     <div class="sitemap">
       <div class="tags">
         <h3 class="title">tags</h3>
-        <p v-if="!tags">暂无标签</p>
+        <p v-if="!tags.data.length">暂无标签</p>
         <ul class="tag-list" v-else>
-          <li class="item" :key="index" v-for="(tag, index) in tags">
-            <nuxt-link :to="``" :title="tag.description">{{ tag.name }}</nuxt-link>
+          <li class="item" :key="index" v-for="(tag, index) in tags.data">
+            <nuxt-link :to="`/tag/${tag.slug}`" :title="tag.description">{{ tag.name }}</nuxt-link>
             <span>&nbsp;</span>
             <span>（{{ tag.count || 0 }}）</span>
           </li>
@@ -15,14 +15,14 @@
       <br>
       <div class="categories">
         <h3 class="title">分类</h3>
-        <p v-if="!categories">暂无分类</p>
+        <p v-if="!categories.data.length">暂无分类</p>
         <ul class="categories-list" v-else>
-          <li class="item" :key="index" v-for="(category, index) in categories">
+          <li class="item" :key="index" v-for="(category, index) in categories.data">
             <p>
               <nuxt-link class="name"
-                         to=""
-                         :title="category.name"
-                         >{{ category.name }}</nuxt-link>
+                :to="`/category/${category.slug}`"
+                :title="category.name"
+                >{{ category.name }}</nuxt-link>
               <span>&nbsp;</span>
               <span>（{{ category.count || 0 }}）</span>
               <span>&nbsp;-&nbsp;&nbsp;</span>
@@ -34,15 +34,15 @@
       <br>
       <div class="articles">
         <h3 class="title" v-text="'文章'">articles</h3>
-        <p v-if="!articles">暂无文章</p>
+        <p v-if="!articles.data.length">暂无文章</p>
         <ul class="article-list" v-else>
-          <li class="item" :key="index" v-for="(article, index) in articles">
+          <li class="item" :key="index" v-for="(article, index) in articles.data">
             <p class="item-content">
               <nuxt-link class="link"
-                           :to="`/article/${article.id}`"
-                           :title="article.title">「 {{ article.title }} 」</nuxt-link>
+                :to="`/article/${article.id}`"
+                :title="article.title">「 {{ article.title }} 」</nuxt-link>
               <span class="sign">&nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-              <a class="toggle" href="">
+              <a class="toggle" @click.prevent="$store.commit('sitemap/TOGGLE_ARTICLE_OPEN', index)">
                 <small v-text="article.open ? '关闭描述' : '打开描述'"></small>
               </a>
             </p>
@@ -68,47 +68,20 @@
         title: `${this.langIsEn ? '' :'归档'+ ' | '}Sitemap`
       }
     },
+    fetch({ store }) {
+      return store.dispatch('loadSitemapArticles', { per_page: 666 })
+    },
+    computed: {
+      ...mapState({
+        tags: state => state.tag.data,
+        categories: state => state.category.data,
+        articles: state => state.sitemap.articles.data,
+        isMobile: state => state.global.isMobile,
+      })
+    },
     data () {
       return {
         mobileLayout:false,
-        categories:[],
-        tags:[],
-        articles:[{
-          title:"Git 原理入门",
-          keywords:["Git","工作"],
-          description:"Seven times have I despised my soul:The first time when I saw her being meek that she might attain height.The second time when I saw her limping before the crippled.The third time when she was given to choose between the hard and the easy, and she chose the easy......",
-          thumb:"/images/demo.png",
-          meta:{
-            views:"121",
-            comments:"1",
-            likes:2
-          },
-          category:[{
-            name:"code"
-          },{
-            name:"think"
-          }],
-          tag:[{
-            name:"code"
-          },{
-            name:"think"
-          }]
-        }],
-        categories:[{
-          name:"代码人生",
-          count:22,
-          description:"24234vdfgsdfgsdf"
-        }],
-        tags:[{
-          name:"javascript",
-          count:22,
-          description:"24234vdfgsdfgsdf"
-        },{
-          name:"算法与数学",
-          count:22,
-          description:"24234vdfgsdfgsdf"
-        }],
-
       }
     },
   }

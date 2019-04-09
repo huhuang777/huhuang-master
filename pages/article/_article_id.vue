@@ -37,14 +37,14 @@
           <span>Article created at</span>
           <span>&nbsp;</span>
           <nuxt-link :title="buildDateTitle(article.create_at)"
-                       :to="buildDateLink(article.create_at)">
+            :to="buildDateLink(article.create_at)">
             <span>{{ buildDateTitle(article.create_at) }}</span>
           </nuxt-link>
           <span>&nbsp;in category&nbsp;</span>
           <nuxt-link :key="index"
-                     :to="`/category/${category.slug}`"
-                     :title="category.description || category.name"
-                     v-for="(category, index) in article.category">
+            :to="`/category/${category.slug}`"
+            :title="category.description || category.name"
+            v-for="(category, index) in article.category">
             <span>{{ category.name }}</span>
             <span v-if="article.category.length && article.category[index + 1]">、</span>
           </nuxt-link>
@@ -57,14 +57,14 @@
           <span>本文于</span>
           <span>&nbsp;</span>
           <nuxt-link :title="buildDateTitle(article.create_at)"
-                       :to="buildDateLink(article.create_at)">
+              :to="buildDateLink(article.create_at)">
             <span>{{ buildDateTitle(article.create_at) }}</span>
           </nuxt-link>
           <span>&nbsp;发布在&nbsp;</span>
           <span :key="index"
                 v-for="(category, index) in article.category">
             <nuxt-link :to="`/category/${category.slug}`"
-                      :title="category.description || category.name">
+              :title="category.description || category.name">
               <span>{{ $i18n.nav[category.slug] }}</span>
             </nuxt-link>
             <span v-if="article.category.length && article.category[index + 1]">、</span>
@@ -78,9 +78,9 @@
           <span class="title" :class="language">{{ languageIsEn ? 'Related tags:' : '相关标签：' }}</span>
           <span v-if="!article.tag.length">无相关标签</span>
           <span :key="index"
-                v-for="(tag, index) in article.tag">
+            v-for="(tag, index) in article.tag">
             <nuxt-link :to="`/tag/${tag.slug}`"
-                      :title="tag.description || tag.name">
+              :title="tag.description || tag.name">
               <span>{{ tag.name }}</span>
             </nuxt-link>
             <span v-if="article.tag.length && article.tag[index + 1]">、</span>
@@ -89,7 +89,7 @@
         <p class="item">
           <span class="title" :class="language">{{ languageIsEn ? 'Article Address:' : '永久地址：' }}</span>
           <span class="site-url" @click="copyArticleUrl">
-                <span>https://huhuang.net/article/{{ article.id }}</span>
+            <span>https://huhuang.net/article/{{ article.id }}</span>
           </span>
         </p>
         <div class="item">
@@ -99,8 +99,8 @@
             <span>&nbsp;&nbsp;|&nbsp;&nbsp;</span>
           </span>
           <a href="https://creativecommons.org/licenses/by-nc/3.0/cn/deed.zh"
-             target="_blank"
-             rel="external nofollow noopenter">Creative Commons BY-NC 3.0 CN</a>
+            target="_blank"
+            rel="external nofollow noopenter">Creative Commons BY-NC 3.0 CN</a>
         </div>
       </div>
     </transition>
@@ -110,8 +110,8 @@
           <div class="swiper-wrapper">
             <div class="swiper-slide item" v-for="(article, index) in article.related" :key="index">
               <nuxt-link :to="`/article/${article.id}`" 
-                          :title="article.title" 
-                          class="item-box">
+                :title="article.title" 
+                class="item-box">
                 <img :src="buildThumb(article.thumb)" class="thumb" :alt="article.title">
                 <span class="title">{{ article.title }}</span>
               </nuxt-link>
@@ -123,8 +123,8 @@
         <ul class="article-list">
           <li class="item" v-for="(article, index) in article.related.slice(0, 8)" :key="index">
             <nuxt-link class="item-link"
-                      :to="`/article/${article.id}`" 
-                      :title="`「 ${article.title} 」- 继续阅读`">
+              :to="`/article/${article.id}`" 
+              :title="`「 ${article.title} 」- 继续阅读`">
               <span class="sign">《</span>
               <span class="title">{{ article.title }}</span>
               <span class="sign">》</span>
@@ -136,8 +136,8 @@
     </template>
     <div class="comment">
       <comment-box :post-id="article.id"
-                   :likes="article.meta.likes"
-                   v-if="!fetching && article.title">
+        :fetching="fetching"
+        :likes="article.meta && article.meta.likes">
       </comment-box>
     </div>
   </div>
@@ -154,9 +154,12 @@
       return params.article_id && !isNaN(Number(params.article_id))
     },
     fetch({ store, params, error }) {
-      return store.dispatch('loadArticleDetail', params).catch(err => {
-        error({ statusCode: 404, message: '众里寻他 我已不再' })
-      })
+      return Promise.all([
+        store.dispatch('loadArticleDetail', params).catch(err => {
+          error({ statusCode: 404, message: '众里寻他 我已不再' })
+        }),
+        store.dispatch('loadCommentsByPostId', { post_id: params.article_id })
+      ])
     },
     head() {
       const article = this.article

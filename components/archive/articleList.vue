@@ -4,9 +4,9 @@
       <transition name="module" mode="out-in">
         <transition-group name="fade" tag="div" v-if="article && article.length>0">
           <list-item :key="index"
-                     :article="item"
-                     @click.native="toDetail(item)"
-                     v-for="(item, index) in article">
+            :article="item"
+            @click.native="toDetail(item)"
+            v-for="(item, index) in article">
           </list-item>
         </transition-group>
       </transition>

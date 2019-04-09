@@ -19,7 +19,7 @@ export const localUser = {
 
 export const localHistoryLikes = {
   get() {
-    const historyLikes = getData('user_like_history')
+    const historyLikes = getData('user_like_history');
     return historyLikes ? JSON.parse(historyLikes) : null
   },
   remove: () => delData('user_like_history'),

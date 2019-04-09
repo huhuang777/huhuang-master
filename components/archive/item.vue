@@ -13,9 +13,9 @@
             <span v-else-if="article.origin === 2">混撰</span>
           </span>
           <img class="item-thumb-img" 
-               :src="buildThumb(article.thumb)"
-               :alt="article.title"
-               :title="article.title">
+            :src="buildThumb(article.thumb)"
+            :alt="article.title"
+            :title="article.title">
         </nuxt-link>
       </div>
       <div class="item-body">
@@ -48,15 +48,14 @@
                 v-for="(category, index) in article.category"
                >{{ category.name }}</nuxt-link>
             </template>
-
             <span v-else>未分类</span>
           </span>
           <span class="tags">
             <i class="iconfont icon-tag"></i>
             <span v-if="!article.tag">无</span>
             <nuxt-link :key="index" 
-                       :to="`/tag/${tag.slug}`" 
-                       v-for="(tag, index) in article.tag">{{ tag.name }}</nuxt-link>
+              :to="`/tag/${tag.slug}`" 
+              v-for="(tag, index) in article.tag">{{ tag.name }}</nuxt-link>
           </span>
         </div>
       </div>
