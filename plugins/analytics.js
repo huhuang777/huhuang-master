@@ -5,11 +5,12 @@
 
 import Vue from 'vue'
 import VueAnalytics from 'vue-analytics'
+import {isBrowser, isProdMode } from '../environment'
 
-if (process.env.NODE_ENV === 'production'||true) {
+if (isBrowser) {
   
   // 新版本解决方案
-  window.onNuxtReady((app) => {
+  window.onNuxtReady(app => {
     Vue.use(VueAnalytics, {
       id: 'UA-128592903-1',
       router: window.$nuxt.$router,
@@ -19,10 +20,15 @@ if (process.env.NODE_ENV === 'production'||true) {
         screenview: true
       },
       debug: {
-        sendHitTask: true
+        sendHitTask: isProdMode
+      },
+      onReady() {
+        Vue.$ga.require('displayfeatures')
       }
     })
   })
+}
+
 
   // 旧版本解决方案
   /*
@@ -48,4 +54,4 @@ if (process.env.NODE_ENV === 'production'||true) {
     })
   })
   */
-}
+
