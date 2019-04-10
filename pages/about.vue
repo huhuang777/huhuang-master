@@ -8,8 +8,8 @@
               <div class="desc">
                 <p class="item">
                   <i class="iconfont icon-user"></i>
-                  <span v-if="langIsEn"><span class="first-letter">I</span>'m Troye.</span>
-                  <span v-else>
+                  <!-- <span v-if="langIsEn"><span class="first-letter">I</span>'m Troye.</span> -->
+                  <span>
                     <span class="first-letter">我</span>
                     <span>，JS栈开发，</span>
                     <strong>95后小鲜肉代表人物</strong></span>
@@ -20,8 +20,8 @@
                 </p>
                 <p class="item">
                   <i class="iconfont icon-like"></i>
-                  <span v-if="langIsEn">music.</span>
-                  <span v-else>
+                  <!-- <span v-if="langIsEn">music.</span> -->
+                  <span>
                     <strong>音乐、纪录片、地理、历史、Coding、游戏（文明、LOL）、美剧、微观世界</strong>
                   </span>
                 </p>
@@ -90,8 +90,8 @@
                 </p>
                 <p class="item">
                   <i class="iconfont icon-code"></i>
-                  <span class="skills" v-if="langIsEn">Talk is cheap. fuck me.</span>
-                  <span v-else>
+                  <!-- <span class="skills" v-if="langIsEn">Talk is cheap. fuck me.</span> -->
+                  <span>
                     <strong>Vue、React、NodeJS...</strong>
                   </span>
                 </p>
@@ -117,7 +117,7 @@
                 <a class="followme" 
                    href="" 
                    @click.stop.prevent=""
-                   v-if="!mobileLayout">{{ langIsEn ? 'Friend me' : 'Friend me' }}</a>
+                   v-if="!mobileLayout">{{'Friend me' }}</a>
                 <div class="wechat" v-if="!mobileLayout"></div>
               </div>
             </div>
@@ -139,7 +139,7 @@
               </div>
             </div>
             <div class="about-map" v-if="!mobileLayout">
-              <iframe src="/partials/map.html" style="width: 100%; height: 236px;"></iframe>
+              <iframe :src='cdnUrl+"/partials/map.html"' style="width: 100%; height: 236px;"></iframe>
             </div>
           </div>
         </div>
@@ -153,7 +153,7 @@
     name: 'about',
     head() {
       return {
-        title: `${this.langIsEn ? '' : '关于我' + ' | '}About`
+        title: `${ '关于我' + ' | '}About`
       }
     },
     data () {
@@ -163,15 +163,15 @@
             links:[{
               name:"友情链接",
               slogan:"slogan",
-              avatar:cdnUrl+"/images/user.png"
+              avatar:this.cdnUrl+"/images/user.png"
             },{
               name:"友情链接",
               slogan:"slogan",
-              avatar:cdnUrl+"/images/user.png"
+              avatar:this.cdnUrl+"/images/user.png"
             },{
               name:"友情链接",
               slogan:"slogan",
-              avatar:cdnUrl+"/images/user.png"
+              avatar:this.cdnUrl+"/images/user.png"
             }]
         }
     },
