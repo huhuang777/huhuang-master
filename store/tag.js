@@ -1,7 +1,7 @@
 /**
  * @file 标签数据状态 / ES module
  * @module store/tag
- * @author Surmon <https://github.com/surmon-china>
+ * 
  */
 
 export const state = () => {

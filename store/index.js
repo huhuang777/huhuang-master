@@ -1,7 +1,7 @@
 /**
  * @file 根数据状态,存放全局数据和异步方法 / ES module
  * @module store/entry
- * @author Surmon <https://github.com/surmon-china>
+ * 
  */
 
 import Vue from 'vue'
@@ -146,10 +146,10 @@ export const actions = {
       per_page: 88
     }, params)
     
-    // if (params.page === 1) {
-    //   commit('comment/CLEAR_LIST')
-    // }
-    commit('comment/CLEAR_LIST')
+    if (params.page === 1) {
+      commit('comment/CLEAR_LIST')
+    }
+    
     commit('comment/REQUEST_LIST')
     return this.$axios.$get(`${API_PREFIX}/comment`, { params })
       .then(response => {

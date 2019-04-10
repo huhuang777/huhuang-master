@@ -135,7 +135,7 @@
       </div>
     </template>
     <div class="comment">
-      <comment-box :post-id="article.id"
+      <comment-box :post-id="routeArticleId"
         :fetching="fetching"
         :likes="article.meta && article.meta.likes">
       </comment-box>
@@ -207,6 +207,9 @@
       }),
       languageIsEn() {
         return this.$store.getters['option/langIsEn']
+      },
+      routeArticleId() {
+        return Number(this.$route.params.article_id)
       },
       articleContent() {
         const content = this.article.content

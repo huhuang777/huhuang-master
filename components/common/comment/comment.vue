@@ -59,7 +59,7 @@
       <div
         key="empty"
         class="empty-box"
-        v-else-if="!comment.data[0]"
+        v-else-if="!commentData.data.data[0]"
         v-text="'期待你的捷足先登'"
       ></div>
       <div class="list-box" key="list" ref="commentList" v-else>
@@ -68,7 +68,7 @@
             class="comment-item"
             :id="`comment-item-${comment.id}`"
             :key="comment.id"
-            v-for="comment in comment.data"
+            v-for="comment in commentData.data.data"
           >
             <div class="cm-avatar">
               <a
@@ -377,6 +377,7 @@
     computed: {
       ...mapState({
         comment: state => state.comment.data,
+        commentData: state => state.comment,
         commentFetching: state => state.comment.fetching,
         commentPosting: state => state.comment.posting,
         constants: state => stateConstants,
@@ -405,9 +406,12 @@
       }
     },
     mounted() {
-     // this.initAppOptionBlackList()
+      //this.initAppOptionBlackList()
       if (isBrowser) {
         this.observeLozad()
+      }
+      if (!this.comment.pagination.total_page) {
+        this.loadComemntList()
       }
     },
     activated() {
@@ -706,7 +710,7 @@
               })
               preImage(emoji, emoji233333.launch.bind(emoji233333))
             } else if (content.includes('666')) {
-              const emoji = '/images/emojis/666.png'
+              const emoji = `${this.cdnUrl}/images/emojis/666.png`
               emoji233333.update({
                 emoji,
                 speed: 12,
@@ -715,7 +719,7 @@
               })
               preImage(emoji, emoji233333.launch.bind(emoji233333))
             } else if (content.includes('呵呵')) {
-              const emoji = '/images/emojis/hehe.png'
+              const emoji = `${this.cdnUrl}/images/emojis/hehe.png`
               emoji233333.update({ emoji, staggered: false, speed: 8, increaseSpeed: 0.04 })
               preImage(emoji, emoji233333.launch.bind(emoji233333))
             }

@@ -258,7 +258,7 @@
       }
 
       const self = this
-      const room = 'surmon.me'
+      const room = 'huhuang.net'
 
       // 用于唯一标识符
       const buildStreamId = peer => `remote-video-${webrtc.getDomId(peer)}`

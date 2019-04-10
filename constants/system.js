@@ -1,7 +1,7 @@
 /**
  * @file System constant / Commonjs module
  * @module system.constant
- * @author Surmon <https://github.com/surmon-china>
+ * 
  */
 
 exports.Language = {

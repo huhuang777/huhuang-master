@@ -1,7 +1,7 @@
 /**
  * @file State constant / Commonjs module
  * @module state.constant
- * @author Surmon <https://github.com/surmon-china>
+ * 
  */
 
 // 转载状态

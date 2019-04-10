@@ -35,7 +35,7 @@
                          rel="external nofollow noopenter">
                         <i class="iconfont icon-github"></i>
                       </a>
-                      <a href="mailto:huhuang777@gmail.com"
+                      <a href="mailto:huhuang777@foxmail.com"
                          target="_blank"
                          class="mail"
                          rel="external nofollow noopenter">

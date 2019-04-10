@@ -2,7 +2,7 @@
   <footer class="footer">
     <div class="container">
       <div class="footer-content">
-        <!-- <span>陕ICP备13004859号</span> -->
+        <span>浙ICP备18052298号</span>
         <!-- <span> - </span> -->
         <span>&nbsp;&nbsp;|&nbsp;&nbsp;</span>
 
@@ -10,9 +10,9 @@
          <!-- chinese -->
         <span>
           <span>由&nbsp;</span>
-          <nuxt-link to="/project">NodePress</nuxt-link>
+          <nuxt-link to="">NodePress</nuxt-link>
           <span>、</span>
-          <nuxt-link to="/project">Nuxt.js</nuxt-link>
+          <nuxt-link to="">Nuxt.js</nuxt-link>
           <span>&nbsp;和强作用力&nbsp;强力驱动&nbsp;</span>
           <span>&nbsp;&nbsp;|&nbsp;&nbsp;</span>
           <nuxt-link to="/about">关于我</nuxt-link>

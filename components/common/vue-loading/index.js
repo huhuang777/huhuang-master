@@ -1,6 +1,6 @@
  /**
  * @file Vue-loading component / ES module
- * @author Surmon <surmon@foxmail.com>
+
  */
 
 import LoadingComponent from './loading'

@@ -1,4 +1,5 @@
 const pkg = require('./package')
+const path = require('path')
 const apiConfig = require('./api.config')
 const isProdMode = Object.is(process.env.NODE_ENV, 'production')
 const langIsEn = false;
@@ -121,7 +122,7 @@ module.exports = {
     */
     analyze: process.argv.join('').includes('analyze'), // 分析
     maxChunkSize: 360000, // 单个包最大尺寸
-    // extractCSS: true, // 单独提取 css
+    extractCSS: true, // 单独提取 css
     publicPath: apiConfig.cdnUrl + '/_nuxt/',
     postcss: {
       plugins: {
@@ -167,20 +168,20 @@ module.exports = {
       // 处理 Swiper4 下的 dom7 模块的语法问题
       webpackConfig.resolve.alias.dom7$ = 'dom7/dist/dom7.js'
       webpackConfig.resolve.alias.swiper$ = 'swiper/dist/js/swiper.js'
-      if (isDev && isClient) {
-        // Run ESLINT on save
-        webpackConfig.module.rules.push({
-          enforce: 'pre',
-          test: /\.(js|vue)$/,
-          loader: 'eslint-loader',
-          exclude: [/(node_modules)/, /underscore-simple/, /webrtc/]
-        })
-      }
+      // if (isDev && isClient) {
+      //   // Run ESLINT on save
+      //   webpackConfig.module.rules.push({
+      //     enforce: 'pre',
+      //     test: /\.(js|vue)$/,
+      //     loader: 'eslint-loader',
+      //     exclude: [/(node_modules)/, /underscore-simple/, /webrtc/]
+      //   })
+      // }
       if (isProdMode) {
         // 处理 Template 和 CSS 中的 cdn 地址
         const vueLoader = webpackConfig.module.rules.find(loader => loader.loader === 'vue-loader')
         if (vueLoader) {
-          // vueLoader.options.loaders.html = path.resolve(__dirname, './extend/html-cdn-loader')
+          vueLoader.options.loaders.html = path.resolve(__dirname, './extend/html-cdn-loader')
           const vueLoaders = vueLoader.options.loaders
           for (const cssLoader in vueLoaders) {
             if (Array.isArray(vueLoaders[cssLoader])) {

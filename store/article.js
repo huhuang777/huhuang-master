@@ -1,7 +1,7 @@
 /**
  * @file 文章数据状态 / ES module
  * @module store/article
- * @author Surmon <https://github.com/surmon-china>
+ * 
  */
 
 export const state = () => {

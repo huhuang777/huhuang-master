@@ -1,6 +1,5 @@
 /**
  * @file Vue-empty component / ES module
- * @author Surmon <surmon@foxmail.com>
  */
 
 import EmptyComponent from './empty'

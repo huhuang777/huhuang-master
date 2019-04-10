@@ -98,7 +98,7 @@
       currentBackgroundImage() {
         const tagBg = this.getExtendsValue(this.currentTag, 'background')
         const cateBg = this.getExtendsValue(this.currentCategory, 'background')
-        return tagBg || cateBg || '/images/service.jpg'
+        return tagBg || cateBg || `${this.cdnUrl}/images/service.jpg`
       },
       currentBackgroundColor() {
         const tagBg = this.getExtendsValue(this.currentTag, 'bgcolor')
