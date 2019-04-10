@@ -5,7 +5,7 @@
         <div class="navbar-left">
           <div class="navbar-header">
             <span class="navbar-blank"></span>
-            <img src="/images/logo.png" class="navbar-logo"/>
+            <img :src='cdnUrl+"/images/logo.png"' class="navbar-logo"/>
             <!-- <span class="navbar-slogan" v-text="$i18n.text.slogan"></span> -->
             <nuxt-link to="/" class="navbar-link" :title="$i18n.text.slogan"></nuxt-link>
           </div>

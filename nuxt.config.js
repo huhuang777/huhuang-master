@@ -181,7 +181,7 @@ module.exports = {
         // 处理 Template 和 CSS 中的 cdn 地址
         const vueLoader = webpackConfig.module.rules.find(loader => loader.loader === 'vue-loader')
         if (vueLoader) {
-          vueLoader.options.loaders.html = path.resolve(__dirname, './extend/html-cdn-loader')
+          // vueLoader.options.loaders.html = path.resolve(__dirname, './extend/html-cdn-loader')
           const vueLoaders = vueLoader.options.loaders
           for (const cssLoader in vueLoaders) {
             if (Array.isArray(vueLoaders[cssLoader])) {

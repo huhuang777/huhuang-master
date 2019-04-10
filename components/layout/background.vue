@@ -145,7 +145,7 @@
       width: 100%;
       height: 100%;
       opacity: .4;
-      background: url(/images/background.png);
+      background: url(https://cdn.huhuang.net/images/background.png);
     }
 
     .background-canvas {

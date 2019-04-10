@@ -98,18 +98,18 @@
               </div>
               <div class="gravatar">
                 <div class="background be-2">
-                  <img src="/images/about-background-be-2.jpg" alt="background" class="image">
+                  <img :src='cdnUrl+"/images/about-background-be-2.jpg"' alt="background" class="image">
                 </div>
                 <div class="background be-1">
-                  <img src="/images/about-background-be-1.jpg" alt="background" class="image">
+                  <img :src='cdnUrl+"/images/about-background-be-1.jpg"' alt="background" class="image">
                 </div>
                 <div class="background star-1">
-                  <img src="/images/about-background-star-1.png" alt="background-star" class="image">
+                  <img :src='cdnUrl+"/images/about-background-star-1.png"' alt="background-star" class="image">
                 </div>
                 <div class="background star-2">
-                  <img src="/images/about-background-star-2.png" alt="background-star" class="image">
+                  <img :src='cdnUrl+"/images/about-background-star-2.png"' alt="background-star" class="image">
                 </div>
-                <img src="/images/user.png" class="avatar">
+                <img :src='cdnUrl+"/images/user.png"' class="avatar">
                 <div class="desc">
                   <h2 class="name"><strong>TroyeHu</strong></h2>
                   <p class="skill">JS Stack Developer.</p>
@@ -163,15 +163,15 @@
             links:[{
               name:"友情链接",
               slogan:"slogan",
-              avatar:"/images/user.png"
+              avatar:cdnUrl+"/images/user.png"
             },{
               name:"友情链接",
               slogan:"slogan",
-              avatar:"/images/user.png"
+              avatar:cdnUrl+"/images/user.png"
             },{
               name:"友情链接",
               slogan:"slogan",
-              avatar:"/images/user.png"
+              avatar:cdnUrl+"/images/user.png"
             }]
         }
     },
