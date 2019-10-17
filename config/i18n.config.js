@@ -18,7 +18,32 @@ module.exports = {
     }
   ],
   data: {
-    nav: {},
+    nav: {
+      home: {
+        zh: '首页',
+        en: 'Home'
+      },
+      code: {
+        zh: '代码相关',
+        en: 'Code'
+      },
+      think: {
+        zh: '所思所想',
+        en: 'Think'
+      },
+      map: {
+        zh: '归档',
+        en: 'Archive'
+      },
+      about: {
+        zh: '关于我',
+        en: 'About'
+      },
+      guestbook: {
+        zh: '留言墙',
+        en: 'Comment'
+      }
+    },
     text: {
       text: {
         empty: {

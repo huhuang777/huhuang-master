@@ -1,28 +1,37 @@
 <template>
   <div class="article-list-item">
-    <div class="item-content">
-      <div class="item-thumb">
+    <div class="item-content" :class="{ mobile: mobileLayout }">
+      <div class="item-thumb" v-if="!mobileLayout">
         <nuxt-link :to="`/article/${article.id}`">
-          <span class="item-oirigin" :class="{
+          <span
+            class="item-oirigin"
+            :class="{
             self: !article.origin,
             other: article.origin === 1,
             hybrid: article.origin === 2
-          }">
-            <span v-if="!article.origin" >原创</span>
+          }"
+          >
+            <span v-if="!article.origin">原创</span>
             <span v-else-if="article.origin === 1">转载</span>
             <span v-else-if="article.origin === 2">混撰</span>
           </span>
-          <img class="item-thumb-img" 
+          <img
+            class="item-thumb-img"
             :src="buildThumb(article.thumb)"
             :alt="article.title"
-            :title="article.title">
+            :title="article.title"
+          />
         </nuxt-link>
       </div>
       <div class="item-body">
         <h4 class="item-title">
           <nuxt-link :to="`/article/${article.id}`" :title="article.title" v-text="article.title"></nuxt-link>
         </h4>
-        <p class="item-description" style="-webkit-box-orient: vertical;" v-html="article.description"></p>
+        <p
+          class="item-description"
+          style="-webkit-box-orient: vertical;"
+          v-html="article.description"
+        ></p>
         <div class="item-meta">
           <span class="date">
             <i class="iconfont icon-clock1"></i>
@@ -40,22 +49,25 @@
             <i class="iconfont icon-like"></i>
             <span>{{ article.meta.likes || 0 }}</span>
           </span>
-          <span class="categories">
+          <span class="categories" v-if="!mobileLayout">
             <i class="iconfont icon-list"></i>
-            <template  v-if="article.category">
-              <nuxt-link :key="index"
+            <template v-if="article.category">
+              <nuxt-link
+                :key="index"
                 :to="`/category/${category.slug}`"
                 v-for="(category, index) in article.category"
-               >{{ category.name }}</nuxt-link>
+              >{{ category.name }}</nuxt-link>
             </template>
             <span v-else>未分类</span>
           </span>
-          <span class="tags">
+          <span class="tags" v-if="!mobileLayout">
             <i class="iconfont icon-tag"></i>
             <span v-if="!article.tag">无</span>
-            <nuxt-link :key="index" 
-              :to="`/tag/${tag.slug}`" 
-              v-for="(tag, index) in article.tag">{{ tag.name }}</nuxt-link>
+            <nuxt-link
+              :key="index"
+              :to="`/tag/${tag.slug}`"
+              v-for="(tag, index) in article.tag"
+            >{{ tag.name }}</nuxt-link>
           </span>
         </div>
       </div>
@@ -64,168 +76,211 @@
 </template>
 
 <script>
-  import { mapState } from 'vuex'
-  export default {
-    name: 'article-list-item',
-    props: {
-      article: Object
-    },
-    computed: {
-      ...mapState('option', ['imgExt', 'mobileLayout'])
-    },
-    methods: {
-      buildThumb(thumb) {
-        if (!thumb) return `${this.cdnUrl}/images/thumb-article.jpg`
-        return `${thumb}?imageView2/1/w/350/h/238/format/${this.imgExt}/interlace/1/q/75|watermark/2/text/SHVodWFuZy5uZXQ=/font/Y2FuZGFyYQ==/fontsize/460/fill/I0ZGRkZGRg==/dissolve/23/gravity/SouthWest/dx/15/dy/7|imageslim`
-      }
+import { mapState } from 'vuex'
+export default {
+  name: 'article-list-item',
+  props: {
+    article: Object
+  },
+  computed: {
+    ...mapState('option', ['imgExt', 'mobileLayout'])
+  },
+  methods: {
+    buildThumb(thumb) {
+      if (!thumb) return `${this.cdnUrl}/images/thumb-article.jpg`
+      return `${thumb}?imageView2/1/w/350/h/238/format/${
+        this.imgExt
+      }/interlace/1/q/75|watermark/2/text/SHVodWFuZy5uZXQ=/font/Y2FuZGFyYQ==/fontsize/460/fill/I0ZGRkZGRg==/dissolve/23/gravity/SouthWest/dx/15/dy/7|imageslim`
     }
   }
+}
 </script>
 
 <style lang="scss" scoped>
-  .article-list-item {
-    margin-bottom: 1em;
-    background-color: $module-bg;
+.article-list-item {
+  margin-bottom: 1em;
+  background-color: $module-bg;
 
-    &:last-child {
-      margin: 0;
-    }
+  &:last-child {
+    margin: 0;
+  }
+
+  &:hover {
+    background-color: $module-hover-bg;
+  }
+
+  > .item-content {
+    display: block;
+    overflow: hidden;
+    height: 9.5em;
+    padding: 0.5em;
 
     &:hover {
-      background-color: $module-hover-bg;
-    }
-
-    > .item-content {
-      display: block;
-      overflow: hidden;
-      height: 9.5em;
-      padding: .5em;
-
-      &:hover {
-
-        > .item-thumb {
-
-          .item-oirigin {
-            opacity: 1;
-          }
-
-          .item-thumb-img {
-            @include css3-prefix(opacity, .95);
-            @include css3-prefix(transform, translateX(-.5em));
-          }
-        }
-      }
-
       > .item-thumb {
-        float: left;
-        width: 12em;
-        height: 8.5em;
-        overflow: hidden;
-        position: relative;
-
         .item-oirigin {
-          // width: 4rem;
-          height: 2.1rem;
-          line-height: 2.1rem;
-          left: 0;
-          top: 0;
-          position: absolute;
-          z-index: 9;
-          font-size: $font-size-small;
-          text-align: center;
-          color: #fff;
-          border-bottom-right-radius: 1px;
-          opacity: .4;
-          padding: 0 .8rem;
-          text-transform: uppercase;
-
-          &.self {
-            background-color: rgba(#4caf50, .5);
-          }
-
-          &.other {
-            background-color: rgba(#ff5722, .5);
-          }
-
-          &.hybrid {
-            background-color: rgba($primary, .5);
-          }
+          opacity: 1;
         }
 
         .item-thumb-img {
-          min-width: 100%;
-          width: calc(100% + 0.5em);
-          max-width: calc(100% + 0.5em);
-          height: auto;
-          min-height: 8.5em;
-          border-color: transparent;
-          background-color: $module-hover-bg;
-          @include css3-prefix(opacity, 1);
-          @include css3-prefix(transform, translateX(0));
+          @include css3-prefix(opacity, 0.95);
+          @include css3-prefix(transform, translateX(-0.5em));
+        }
+      }
+    }
+
+    > .item-thumb {
+      float: left;
+      width: 12em;
+      height: 8.5em;
+      overflow: hidden;
+      position: relative;
+
+      .item-oirigin {
+        // width: 4rem;
+        height: 2.1rem;
+        line-height: 2.1rem;
+        left: 0;
+        top: 0;
+        position: absolute;
+        z-index: 9;
+        font-size: $font-size-small;
+        text-align: center;
+        color: #fff;
+        border-bottom-right-radius: 1px;
+        opacity: 0.4;
+        padding: 0 0.8rem;
+        text-transform: uppercase;
+
+        &.self {
+          background-color: rgba(#4caf50, 0.5);
+        }
+
+        &.other {
+          background-color: rgba(#ff5722, 0.5);
+        }
+
+        &.hybrid {
+          background-color: rgba($primary, 0.5);
         }
       }
 
-      > .item-body {
-        float: right;
-        width: 40.5em;
-        height: 8.5em;
+      .item-thumb-img {
+        min-width: 100%;
+        width: calc(100% + 0.5em);
+        max-width: calc(100% + 0.5em);
+        height: auto;
+        min-height: 8.5em;
+        border-color: transparent;
+        background-color: $module-hover-bg;
+        @include css3-prefix(opacity, 1);
+        @include css3-prefix(transform, translateX(0));
+      }
+    }
 
-        > .item-title {
-          font-size: 1em;
-          font-weight: bold;
-          color: $link-hover-color;
-          margin-top: .2em;
-          margin-bottom: .5em;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
+    > .item-body {
+      float: right;
+      width: 40.5em;
+      height: 8.5em;
 
-          > a {
-            margin-left: 0;
+      > .item-title {
+        font-size: 1em;
+        font-weight: bold;
+        color: $link-hover-color;
+        margin-top: 0.2em;
+        margin-bottom: 0.5em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
 
-            &:hover {
-              display: inline-block;
-              text-decoration: underline;
-              margin-left: .5em;
-            }
+        > a {
+          margin-left: 0;
+
+          &:hover {
+            display: inline-block;
+            text-decoration: underline;
+            margin-left: 0.5em;
+          }
+        }
+      }
+
+      > .item-description {
+        height: 5em;
+        margin: 0;
+        margin-bottom: 0.3em;
+        overflow: hidden;
+        font-size: 0.9em;
+        line-height: 1.8em;
+        text-overflow: ellipsis;
+        @include clamp(3);
+      }
+
+      > .item-meta {
+        height: 2em;
+        display: flex;
+        justify-content: flex-start;
+        align-items: baseline;
+        overflow: hidden;
+        font-size: 0.9em;
+        line-height: 2em;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        word-wrap: normal;
+
+        > .date {
+          text-transform: uppercase;
+        }
+
+        > .views {
+          min-width: 4rem;
+        }
+
+        > .likes,
+        > .comments {
+          min-width: 3em;
+        }
+
+        > .date,
+        > .views,
+        > .comments,
+        > .likes,
+        > .tags,
+        > .categories {
+          margin-right: 1em;
+
+          > .iconfont {
+            font-size: 1em;
+            margin-right: 0.4em;
           }
         }
 
+        > .tags,
+        > .categories {
+          a {
+            text-transform: capitalize;
+            margin-right: 0.5em;
+          }
+        }
+
+        > .tags {
+          margin-right: 0;
+        }
+      }
+    }
+
+    &.mobile {
+      height: auto;
+
+      > .item-body {
+        width: 100%;
+        height: auto;
+
         > .item-description {
-          height: 5em;
-          margin: 0;
-          margin-bottom: 0.3em;
-          overflow: hidden;
-          font-size: .9em;
-          line-height: 1.8em;
-          text-overflow: ellipsis;
-          @include clamp(3);
+          height: auto;
+          margin-bottom: 0.5em;
         }
 
         > .item-meta {
-          height: 2em;
-          display: flex;
-          justify-content: flex-start;
-          align-items: baseline;
-          overflow: hidden;
-          font-size: .9em;
-          line-height: 2em;
-          white-space: nowrap;
-          text-overflow: ellipsis;
-          word-wrap: normal;
-
-          > .date {
-            text-transform: uppercase;
-          }
-
-          > .views {
-            min-width: 4rem;
-          }
-
-          > .likes,
-          > .comments {
-            min-width: 3em;
-          }
+          justify-content: space-between;
 
           > .date,
           > .views,
@@ -233,55 +288,11 @@
           > .likes,
           > .tags,
           > .categories {
-            margin-right: 1em;
-
-            > .iconfont {
-              font-size: 1em;
-              margin-right: .4em;
-            }
-          }
-
-          > .tags,
-          > .categories {
-
-            a {
-              text-transform: capitalize;
-              margin-right: .5em;
-            }
-          }
-
-          > .tags {
-            margin-right: 0;
-          }
-        }
-      }
-
-       &.mobile {
-        height: auto;
-
-        > .item-body {
-          width: 100%;
-          height: auto;
-
-          > .item-description {
-            height: auto;
-            margin-bottom: .5em;
-          }
-
-          > .item-meta {
-            justify-content: space-between;
-
-            > .date,
-            > .views,
-            > .comments,
-            > .likes,
-            > .tags,
-            > .categories {
-              margin: 0;
-            }
+            margin: 0;
           }
         }
       }
     }
   }
+}
 </style>

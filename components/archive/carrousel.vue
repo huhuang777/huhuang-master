@@ -1,14 +1,18 @@
 <template>
-  <div class="carrousel">
+  <div class="carrousel" :class="{ mobile: mobileLayout }">
     <transition name="module" mode="out-in">
       <empty-box class="article-empty-box" key="empty" v-if="!article.data.data.length">
         <slot>{{ "空空如也" }}</slot>
       </empty-box>
-      <div class="swiper" v-swiper:swiper="swiperOption"  v-else-if="renderSwiper">
+      <div class="swiper" v-swiper:swiper="swiperOption" v-else-if="renderSwiper">
         <div class="swiper-wrapper">
-          <div class="swiper-slide item"  v-for="(article, index) in article.data.data.slice(0, 9)" :key="index">
+          <div
+            class="swiper-slide item"
+            v-for="(article, index) in article.data.data.slice(0, 9)"
+            :key="index"
+          >
             <div class="content">
-              <img :src="buildThumb(article.thumb)" :alt="article.title">
+              <img :src="buildThumb(article.thumb)" :alt="article.title" />
               <nuxt-link :to="`/article/${article.id}`" class="title">
                 <span>{{ article.title }}</span>
               </nuxt-link>
@@ -22,134 +26,139 @@
 </template>
 
 <script>
-  import { mapState } from 'vuex'
-  export default {
-    data() {
-      return {
-        renderSwiper: true,
-        swiperOption: {
-          autoplay: {
-            delay: 3500,
-            disableOnInteraction: false
-          },
-          pagination: {
-            clickable: true,
-            el: '.swiper-pagination'
-          },
-          setWrapperSize: true,
-          // autoHeight: true,
-          mousewheel: true,
-          observeParents: true,
-          grabCursor: true,
-          preloadImages: false,
-          lazy: true
-        }
-      }
-    },
-    props: {
-      article: {
-        type: Object
-      }
-    },
-    computed: {
-      ...mapState('option', ['imageExt', 'mobileLayout'])
-    },
-    methods: {
-      buildThumb(thumb) {
-        if (thumb) {
-          if (this.mobileLayout) {
-            return `${thumb}?imageView2/1/w/768/h/271/format/${this.imageExt}/interlace/1/q/80|watermark/2/text/SHVodWFuZy5uZXQ=/font/Y2FuZGFyYQ==/fontsize/560/fill/I0ZGRkZGRg==/dissolve/30/gravity/SouthWest/dx/30/dy/15|imageslim`
-          } else {
-            return `${thumb}?imageView2/1/w/1190/h/420/format/${this.imageExt}/interlace/1/q/80|watermark/2/text/SHVodWFuZy5uZXQ=/font/Y2FuZGFyYQ==/fontsize/680/fill/I0ZGRkZGRg==/dissolve/30/gravity/SouthWest/dx/30/dy/15|imageslim`
-          }
-        } else {
-          return `${this.cdnUrl}/images/${this.mobileLayout ? 'mobile-' : ''}thumb-carrousel.jpg`
-        }
-      },
-      activated() {
-        this.renderSwiper = true
-      },
-      deactivated() {
-        this.renderSwiper = false
+import { mapState } from 'vuex'
+export default {
+  data() {
+    return {
+      renderSwiper: true,
+      swiperOption: {
+        autoplay: {
+          delay: 3500,
+          disableOnInteraction: false
+        },
+        pagination: {
+          clickable: true,
+          el: '.swiper-pagination'
+        },
+        setWrapperSize: true,
+        // autoHeight: true,
+        mousewheel: true,
+        observeParents: true,
+        grabCursor: true,
+        preloadImages: false,
+        lazy: true
       }
     }
+  },
+  props: {
+    article: {
+      type: Object
+    }
+  },
+  computed: {
+    ...mapState('option', ['imageExt', 'mobileLayout'])
+  },
+  methods: {
+    buildThumb(thumb) {
+      if (thumb) {
+        if (this.mobileLayout) {
+          return `${thumb}?imageView2/1/w/768/h/271/format/${
+            this.imageExt
+          }/interlace/1/q/80|watermark/2/text/SHVodWFuZy5uZXQ=/font/Y2FuZGFyYQ==/fontsize/560/fill/I0ZGRkZGRg==/dissolve/30/gravity/SouthWest/dx/30/dy/15|imageslim`
+        } else {
+          return `${thumb}?imageView2/1/w/1190/h/420/format/${
+            this.imageExt
+          }/interlace/1/q/80|watermark/2/text/SHVodWFuZy5uZXQ=/font/Y2FuZGFyYQ==/fontsize/680/fill/I0ZGRkZGRg==/dissolve/30/gravity/SouthWest/dx/30/dy/15|imageslim`
+        }
+      } else {
+        return `${this.cdnUrl}/images/${
+          this.mobileLayout ? 'mobile-' : ''
+        }thumb-carrousel.jpg`
+      }
+    },
+    activated() {
+      this.renderSwiper = true
+    },
+    deactivated() {
+      this.renderSwiper = false
+    }
   }
+}
 </script>
 
 <style lang="scss" scoped>
-  .carrousel {
-    height: 15em;
-    margin-bottom: 1em;
-    position: relative;
-    overflow: hidden;
-    background-color: $module-bg;
+.carrousel {
+  height: 15em;
+  margin-bottom: 1em;
+  position: relative;
+  overflow: hidden;
+  background-color: $module-bg;
 
-    > .swiper {
+  > .swiper {
+    .item {
+      > .content {
+        width: 100%;
+        height: 15em;
+        position: relative;
+        overflow: hidden;
 
-      .item {
-
-        > .content {
+        > img {
           width: 100%;
-          height: 15em;
-          position: relative;
-          overflow: hidden;
+          height: 100%;
+          display: flex;
+          @include css3-prefix(transform, rotate(0deg) scale(1));
+          @include css3-prefix(transition, transform 1s);
 
-          > img {
-            width: 100%;
-            height: 100%; 
-            display: flex;
-            @include css3-prefix(transform, rotate(0deg) scale(1));
-            @include css3-prefix(transition, transform 1s);
-
-            &:hover {
-              @include css3-prefix(transform, rotate(2deg) scale(1.1));
-            }
-          }
-
-          > .title {
-            position: absolute;
-            top: 1.5rem;
-            right: 2rem;
-            color: $link-color;
-            margin: 0;
-            padding: 0 .6em;
-            height: 2em;
-            line-height: 2em;
-            font-size: 1em;
-            font-weight: bold;
-            border-radius: 1px;
-            letter-spacing: .3px;
-            -webkit-background-clip: text;
-            background: linear-gradient(to right, transparent, $module-hover-bg-opacity-3, $module-hover-bg, $module-bg);
-
-            &:hover {
-              color: $text-darken;
-              background-color: $module-hover-bg-opacity-9;
-            }
+          &:hover {
+            @include css3-prefix(transform, rotate(2deg) scale(1.1));
           }
         }
-      }
-    }
 
-    &.mobile {
-      min-height: 8rem;
-      height: auto;
+        > .title {
+          position: absolute;
+          top: 1.5rem;
+          right: 2rem;
+          color: $link-color;
+          margin: 0;
+          padding: 0 0.6em;
+          height: 2em;
+          line-height: 2em;
+          font-size: 1em;
+          font-weight: bold;
+          border-radius: 1px;
+          letter-spacing: 0.3px;
+          -webkit-background-clip: text;
+          background: linear-gradient(
+            to right,
+            transparent,
+            $module-hover-bg-opacity-3,
+            $module-hover-bg,
+            $module-bg
+          );
 
-      > .swiper {
-
-        .item {
-
-          > .content {
-            min-height: 8rem;
-            height: auto;
-
-            > .title {
-              max-width: 75%;
-              @include text-overflow;
-            }
+          &:hover {
+            color: $text-darken;
+            background-color: $module-hover-bg-opacity-9;
           }
         }
       }
     }
   }
+  &.mobile {
+    min-height: 8rem;
+    height: auto;
+    > .swiper {
+      .item {
+        > .content {
+          min-height: 8rem;
+          height: auto;
+          > .title {
+            max-width: 75%;
+            @include text-overflow;
+          }
+        }
+      }
+    }
+  }
+}
 </style>

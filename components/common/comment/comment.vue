@@ -56,14 +56,14 @@
           </li>
         </ul>
       </div>
-      <div
-        key="empty"
-        class="empty-box"
-        v-else-if="!commentData.data.data[0]"
-        v-text="'期待你的捷足先登'"
-      ></div>
+      <div key="empty" class="empty-box" v-else-if="!commentData.data.data[0]" v-text="'期待你的捷足先登'"></div>
       <div class="list-box" key="list" ref="commentList" v-else>
-        <transition-group name="fade" tag="ul" class="comment-list" @after-enter="addCommentAnimateDone">
+        <transition-group
+          name="fade"
+          tag="ul"
+          class="comment-list"
+          @after-enter="addCommentAnimateDone"
+        >
           <li
             class="comment-item"
             :id="`comment-item-${comment.id}`"
@@ -80,7 +80,7 @@
                 <img
                   :alt="comment.author.name ||'匿名用户'"
                   :src="gravatar(comment.author.email) || `${cdnUrl}/images/anonymous.jpg`"
-                >
+                />
               </a>
             </div>
             <div class="cm-body">
@@ -190,7 +190,7 @@
               :class="language"
               :placeholder="'名字 *'"
               v-model="user.name"
-            >
+            />
           </div>
           <div class="email">
             <input
@@ -202,7 +202,7 @@
               :placeholder="'邮箱 *'"
               v-model="user.email"
               @blur="upadteUserGravatar"
-            >
+            />
           </div>
           <div class="site">
             <input
@@ -212,7 +212,7 @@
               :class="language"
               :placeholder="'网址'"
               v-model="user.site"
-            >
+            />
           </div>
           <div class="save" v-if="userCacheEditing">
             <button type="submit" @click="updateUserCache($event)">
@@ -228,9 +228,7 @@
               <i class="iconfont icon-setting"></i>
               <span class="account-setting">账户设置</span>
               <ul class="user-tool">
-                <li
-                  @click.stop.prevent="userCacheEditing = true"
-                >编辑信息</li>
+                <li @click.stop.prevent="userCacheEditing = true">编辑信息</li>
                 <li @click.stop.prevent="claerUserCache">清空信息</li>
               </ul>
             </a>
@@ -243,7 +241,7 @@
             <img
               :alt="user.name || '匿名用户'"
               :src="user.gravatar || `${cdnUrl}/images/anonymous.jpg`"
-            >
+            />
           </div>
         </div>
         <div class="editor">
@@ -253,11 +251,18 @@
                 <span>
                   <span>回复</span>
                   <span>&nbsp;</span>
-                  <a href @click.stop.prevent="toSomeAnchorById(`comment-item-${replyCommentSlef.id}`)">
+                  <a
+                    href
+                    @click.stop.prevent="toSomeAnchorById(`comment-item-${replyCommentSlef.id}`)"
+                  >
                     <strong>#{{ replyCommentSlef.id }} @{{ replyCommentSlef.author.name }}：</strong>
                   </a>
                 </span>
-                <a href class="cancel iconfont icon-cancel" @click.stop.prevent="cancelCommentReply"></a>
+                <a
+                  href
+                  class="cancel iconfont icon-cancel"
+                  @click.stop.prevent="cancelCommentReply"
+                ></a>
               </div>
               <div class="reply-preview" v-html="marked(replyCommentSlef.content)"></div>
             </div>
@@ -291,7 +296,7 @@
               <i class="iconfont icon-image"></i>
             </a>
             <a href class="link" title="link" @click.stop.prevent="insertContent('link')">
-              <i class="iconfont icon-icon-iconfontlianjie"></i>
+              <i class="iconfont icon-link"></i>
             </a>
             <a href class="code" title="code" @click.stop.prevent="insertContent('code')">
               <i class="iconfont icon-code"></i>
@@ -315,380 +320,465 @@
 </template>
 
 <script>
-  import { mapState } from 'vuex'
-  import { isBrowser } from '~/environment/index'
-  import marked from '~/plugins/marked'
-  import gravatar from '~/plugins/gravatar'
-  import stateConstants from '~/constants/state'
-  import { scrollTo } from '~/utils/scroll-to-anywhere'
-  import { browserParse, osParse } from '~/utils/ua-os-browser'
-  import { isArticleDetailRoute, isGuestbookRoute } from '~/utils/route'
-  import { localUser, localHistoryLikes } from '~/utils/local-storage'
-  export default {
-    name: 'vue-comment',
-    props: {
-      fetching: {
-        type: Boolean,
-        default: false
+import { mapState } from 'vuex'
+import { isBrowser } from '~/environment/index'
+import marked from '~/plugins/marked'
+import gravatar from '~/plugins/gravatar'
+import stateConstants from '~/constants/state'
+import { scrollTo } from '~/utils/scroll-to-anywhere'
+import { browserParse, osParse } from '~/utils/ua-os-browser'
+import { isArticleDetailRoute, isGuestbookRoute } from '~/utils/route'
+import { localUser, localHistoryLikes } from '~/utils/local-storage'
+export default {
+  name: 'vue-comment',
+  props: {
+    fetching: {
+      type: Boolean,
+      default: false
+    },
+    likes: {
+      type: Number
+    },
+    postId: {
+      type: Number,
+      required: true
+    }
+  },
+  data() {
+    return {
+      lozadObserver: null,
+      // 父级评论
+      pid: 0,
+      // 评论排序
+      sortMode: -1,
+      // 编辑器相关
+      comemntContentHtml: '',
+      isMobile: false,
+      comemntContentText: '',
+      previewContent: '',
+      previewMode: false,
+      // 用户相关
+      userCacheMode: false,
+      userCacheEditing: false,
+      language: 'zh',
+      user: {
+        name: '',
+        email: '',
+        site: '',
+        gravatar: null
       },
-      likes: {
-        type: Number,
+      // 用户历史数据
+      historyLikes: {
+        pages: [],
+        comments: []
       },
-      postId: {
-        type: Number,
-        required: true
+      regexs: {
+        email: /\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}/,
+        url: /^((https|http):\/\/)+[A-Za-z0-9]+\.[A-Za-z0-9]+[\/=\?%\-&_~`@[\]\':+!]*([^<>\"\"])*$/
+      },
+      emojis: [
+        '😃',
+        '😂',
+        '😅',
+        '😉',
+        '😌',
+        '😔',
+        '😓',
+        '😢',
+        '😍',
+        '😘',
+        '😜',
+        '😡',
+        '😤',
+        '😭',
+        '😱',
+        '😳',
+        '😵',
+        '🌚',
+        '🙏',
+        '👆',
+        '👇',
+        '👌',
+        '🤘',
+        '👍',
+        '👎',
+        '💪',
+        '👏',
+        '🌻',
+        '🌹',
+        '💊',
+        '🇨🇳',
+        '🇺🇸',
+        '🇯🇵 ',
+        '🚩',
+        '🐶',
+        '❤️',
+        '💔',
+        '💩',
+        '👻'
+      ]
+    }
+  },
+  computed: {
+    ...mapState({
+      comment: state => state.comment.data,
+      commentData: state => state.comment,
+      commentFetching: state => state.comment.fetching,
+      commentPosting: state => state.comment.posting,
+      constants: state => stateConstants,
+      blacklist: state =>
+        state.option.globalOption.data
+          ? state.option.globalOption.data.blacklist
+          : []
+    }),
+    isFetching() {
+      // 1. 宿主组件还在加载时，列表和 tool 都呈加载状态
+      // 2. 宿主组件加载完成，如果自己还在请求，则列表呈加载状态
+      // 3. 自己已请求完，宿主组件还在加载，列表和 tool 都呈加载状态
+      return this.fetching || this.commentFetching
+    },
+    isEnLang() {
+      return this.$store.getters['global/isEnLang']
+    },
+    isLikedPage() {
+      return (
+        this.historyLikes.pages && this.historyLikes.pages.includes(this.postId)
+      )
+    },
+    isArticlePage() {
+      return this.$route.params.article_id
+    },
+    isGuestbookPage() {
+      return isGuestbookRoute(this.$route.name)
+    },
+    replyCommentSlef() {
+      return this.comment.data.find(comment => Object.is(comment.id, this.pid))
+    }
+  },
+  mounted() {
+    //this.initAppOptionBlackList()
+    if (isBrowser) {
+      this.observeLozad()
+    }
+    if (!this.comment.pagination.total_page) {
+      this.loadComemntList()
+    }
+  },
+  activated() {
+    this.initUser()
+    // 1. 组件不再负责初始加载评论列表数据的职责
+    // 2. 组件仅负责初评论列表数据翻页、排序的职责
+    // 3. 当容器组件还在请求时，组件全量 Loading
+    // 4. 当只有评论列表在请求时，列表单独 Loading
+  },
+  destroyed() {
+    this.$store.commit('comment/CLEAR_LIST')
+  },
+  deactivated() {
+    this.lozadObserver = null
+    this.$store.commit('comment/CLEAR_LIST')
+  },
+  methods: {
+    browserParse,
+    osParse,
+    // 初始化本地用户即本地用户的点赞历史
+    initUser() {
+      const user = localUser.get()
+      const historyLikes = localHistoryLikes.get()
+      historyLikes && (this.historyLikes = historyLikes)
+      if (user) {
+        this.user = user
+        this.upadteUserGravatar()
+        this.userCacheMode = true
       }
     },
-    data() {
-      return {
-        lozadObserver: null,
-        // 父级评论
-        pid: 0,
-        // 评论排序
-        sortMode: -1,
-        // 编辑器相关
-        comemntContentHtml: '',
-        isMobile:false,
-        comemntContentText: '',
-        previewContent: '',
-        previewMode: false,
-        // 用户相关
-        userCacheMode: false,
-        userCacheEditing: false,
-        language:"zh",
-        user: {
-          name: '',
-          email: '',
-          site: '',
-          gravatar: null
-        },
-        // 用户历史数据
-        historyLikes: {
-          pages: [],
-          comments: []
-        },
-        regexs: {
-          email: /\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}/,
-          url: /^((https|http):\/\/)+[A-Za-z0-9]+\.[A-Za-z0-9]+[\/=\?%\-&_~`@[\]\':+!]*([^<>\"\"])*$/
-        },
-        emojis: ['😃', '😂', '😅', '😉', '😌', '😔', '😓', '😢', '😍', '😘', '😜', '😡', '😤', '😭', '😱', '😳', '😵', '🌚', '🙏', '👆', '👇', '👌', '🤘', '👍', '👎', '💪', '👏', '🌻', '🌹', '💊', '🇨🇳', '🇺🇸', '🇯🇵 ', '🚩', '🐶', '❤️', '💔', '💩', '👻']
+    loadCommentsAnimateDone() {
+      this.observeLozad()
+    },
+    addCommentAnimateDone() {
+      this.observeLozad()
+    },
+    observeLozad() {
+      const listElement = this.$refs.commentList
+      const lozadElements =
+        listElement && listElement.querySelectorAll('.lozad')
+      if (!lozadElements || !lozadElements.length) {
+        return false
+      }
+      this.lozadObserver = lozad(lozadElements, {
+        loaded: element => element.classList.add('loaded')
+      })
+      this.lozadObserver.observe()
+    },
+    shang() {
+      this.$ga.event('内容赞赏', '点击', 'tool')
+      window.utils.openImgPopup(`${this.cdnUrl}/images/shang.jpg`, 'shang')
+    },
+    // markdown解析服务
+    marked(content) {
+      return marked(content, null, false)
+    },
+    // 头像服务
+    gravatar(email) {
+      if (!this.regexs.email.test(email)) return null
+      const gravatar_url = gravatar.url(email, {
+        protocol: 'https'
+      })
+      return gravatar_url
+    },
+    // 更新用户数据
+    updateUserCache(event) {
+      event.preventDefault()
+      if (!this.user.name) {
+        return alert('名字' + '?')
+      }
+      if (!this.user.email) {
+        return alert('邮箱' + '?')
+      }
+      if (!this.regexs.email.test(this.user.email)) {
+        return alert('邮箱不合法')
+      }
+      if (this.user.site && !this.regexs.url.test(this.user.site)) {
+        return alert('网址不合法')
+      }
+      localUser.set(this.user)
+      this.userCacheEditing = false
+    },
+    // 清空用户数据
+    claerUserCache() {
+      this.userCacheMode = false
+      this.userCacheEditing = false
+      localUser.remove()
+      Object.keys(this.user).forEach(key => {
+        this.user[key] = ''
+      })
+    },
+    // 更新当前用户头像
+    upadteUserGravatar() {
+      const emailIsVerified = this.regexs.email.test(this.user.email)
+      this.user.gravatar = emailIsVerified
+        ? this.gravatar(this.user.email)
+        : null
+    },
+    // 编辑器相关
+    commentContentChange() {
+      const html = this.$refs.markdown.innerHTML
+      const text = this.$refs.markdown.innerText
+      if (!Object.is(html, this.comemntContentHtml)) {
+        this.comemntContentHtml = html
+      }
+      if (!Object.is(text, this.comemntContentText)) {
+        this.comemntContentText = text
       }
     },
-    computed: {
-      ...mapState({
-        comment: state => state.comment.data,
-        commentData: state => state.comment,
-        commentFetching: state => state.comment.fetching,
-        commentPosting: state => state.comment.posting,
-        constants: state => stateConstants,
-        blacklist: state => state.option.globalOption.data?state.option.globalOption.data.blacklist:[],
-      }),
-      isFetching() {
-        // 1. 宿主组件还在加载时，列表和 tool 都呈加载状态
-        // 2. 宿主组件加载完成，如果自己还在请求，则列表呈加载状态
-        // 3. 自己已请求完，宿主组件还在加载，列表和 tool 都呈加载状态
-        return this.fetching || this.commentFetching
-      },
-      isEnLang() {
-        return this.$store.getters['global/isEnLang']
-      },
-      isLikedPage() {
-        return this.historyLikes.pages&&this.historyLikes.pages.includes(this.postId)
-      },
-      isArticlePage() {
-        return this.$route.params.article_id
-      },
-      isGuestbookPage() {
-        return isGuestbookRoute(this.$route.name)
-      },
-      replyCommentSlef() {
-        return this.comment.data.find(comment => Object.is(comment.id, this.pid))
+    updateCommentContent({ start = '', end = '' }) {
+      if (!start && !end) return false
+      // 如果选中了内容，则把选中的内容替换，否则在光标位置插入新内容
+      const selectedText = (window.getSelection ||
+        document.getSelection)().toString()
+      const currentText = this.$refs.markdown.innerText
+      if (!!selectedText) {
+        const newText = currentText.replace(
+          selectedText,
+          start + selectedText + end
+        )
+        this.$refs.markdown.innerText = newText
+      } else {
+        this.$refs.markdown.innerText = this.$refs.markdown.innerText +=
+          start + end
+        this.$refs.markdown.scrollTop = this.$refs.markdown.scrollHeight
       }
+      this.commentContentChange()
     },
-    mounted() {
-      //this.initAppOptionBlackList()
-      if (isBrowser) {
-        this.observeLozad()
+    clearCommentContent(content) {
+      this.comemntContentHtml = ''
+      this.$refs.markdown.innerHTML = this.comemntContentHtml
+      this.commentContentChange()
+    },
+    insertContent(type) {
+      const contents = {
+        image: {
+          start: `![`,
+          end: `](https://)`
+        },
+        link: {
+          start: `[`,
+          end: `](https://)`
+        },
+        code: {
+          start: '\n```javascript\n',
+          end: '\n```'
+        }
       }
-      if (!this.comment.pagination.total_page) {
+      this.updateCommentContent(contents[type])
+    },
+    insertEmoji(emoji) {
+      this.updateCommentContent({ end: emoji })
+    },
+    // 切换预览模式
+    togglePreviewMode() {
+      this.previewContent = this.marked(this.comemntContentText)
+      this.previewMode = !this.previewMode
+    },
+    // 评论排序
+    sortComemnts(sort) {
+      if (this.sortMode !== sort) {
+        this.sortMode = sort
         this.loadComemntList()
       }
     },
-    activated() {
-      this.initUser()
-      // 1. 组件不再负责初始加载评论列表数据的职责
-      // 2. 组件仅负责初评论列表数据翻页、排序的职责
-      // 3. 当容器组件还在请求时，组件全量 Loading
-      // 4. 当只有评论列表在请求时，列表单独 Loading
+    // 翻页反向计算
+    paginationReverseActive(index) {
+      const pagination = this.comment.pagination
+      return Object.is(
+        index,
+        pagination.total_page + 1 - pagination.current_page
+      )
     },
-    destroyed() {
-      this.$store.commit('comment/CLEAR_LIST')
+    // 点击用户
+    clickUser(event, user) {
+      if (!user.site) event.preventDefault()
     },
-    deactivated() {
-      this.lozadObserver = null
-      this.$store.commit('comment/CLEAR_LIST')
+    // 跳转到某条指定的id位置
+    toSomeAnchorById(id) {
+      const targetDom = document.getElementById(id)
+      if (targetDom) {
+        const isToEditor = Object.is(id, 'post-box')
+        scrollTo(targetDom, 200, { offset: isToEditor ? 0 : -300 })
+        // 如果是进入编辑模式，则需要激活光标
+        if (isToEditor) {
+          const p = this.$refs.markdown
+          const s = window.getSelection()
+          const r = document.createRange()
+          r.setStart(p, p.childElementCount)
+          r.setEnd(p, p.childElementCount)
+          s.removeAllRanges()
+          s.addRange(r)
+        }
+      }
     },
-    methods: {
-      browserParse,
-      osParse,
-      // 初始化本地用户即本地用户的点赞历史
-      initUser() {
-        const user = localUser.get()
-        const historyLikes = localHistoryLikes.get()
-        historyLikes && (this.historyLikes = historyLikes)
-        if (user) {
-          this.user = user
-          this.upadteUserGravatar()
-          this.userCacheMode = true
-        }
-      },
-      loadCommentsAnimateDone() {
-        this.observeLozad()
-      },
-      addCommentAnimateDone() {
-        this.observeLozad()
-      },
-      observeLozad() {
-        const listElement = this.$refs.commentList
-        const lozadElements = listElement && listElement.querySelectorAll('.lozad')
-        if (!lozadElements || !lozadElements.length) {
-          return false
-        }
-        this.lozadObserver = lozad(lozadElements, {
-          loaded: element => element.classList.add('loaded')
-        })
-        this.lozadObserver.observe()
-      },
-      shang() {
-        this.$ga.event('内容赞赏', '点击', 'tool')
-        window.utils.openImgPopup(`${this.cdnUrl}/images/shang.jpg`, 'shang')
-      },
-      // markdown解析服务
-      marked(content) {
-        return marked(content, null, false)
-      },
-      // 头像服务
-      gravatar(email) {
-        if (!this.regexs.email.test(email)) return null
-        const gravatar_url = gravatar.url(email, { 
-          protocol: 'https'
-        });
-        return gravatar_url
-      },
-      // 更新用户数据
-      updateUserCache(event) {
-        event.preventDefault()
-        if (!this.user.name) {
-          return alert('名字' + '?')
-        }
-        if (!this.user.email) {
-          return alert('邮箱' + '?')
-        }
-        if (!this.regexs.email.test(this.user.email)) {
-          return alert('邮箱不合法')
-        }
-        if (this.user.site && !this.regexs.url.test(this.user.site)) {
-          return alert('网址不合法')
-        }
-        localUser.set(this.user)
-        this.userCacheEditing = false
-      },
-      // 清空用户数据
-      claerUserCache() {
-        this.userCacheMode = false
-        this.userCacheEditing = false
-        localUser.remove()
-        Object.keys(this.user).forEach(key => {
-          this.user[key] = ''
-        })
-      },
-      // 更新当前用户头像
-      upadteUserGravatar() {
-        const emailIsVerified = this.regexs.email.test(this.user.email)
-        this.user.gravatar = emailIsVerified ? this.gravatar(this.user.email) : null
-      },
-      // 编辑器相关
-      commentContentChange() {
-        const html = this.$refs.markdown.innerHTML
-        const text = this.$refs.markdown.innerText
-        if (!Object.is(html, this.comemntContentHtml)) {
-          this.comemntContentHtml = html
-        }
-        if (!Object.is(text, this.comemntContentText)) {
-          this.comemntContentText = text
-        }
-      },
-      updateCommentContent({ start = '', end = '' }) {
-        if (!start && !end) return false
-        // 如果选中了内容，则把选中的内容替换，否则在光标位置插入新内容
-        const selectedText = (window.getSelection || document.getSelection)().toString()
-        const currentText = this.$refs.markdown.innerText
-        if (!!selectedText) {
-          const newText = currentText.replace(selectedText, start + selectedText + end)
-          this.$refs.markdown.innerText = newText
-        } else {
-          this.$refs.markdown.innerText = this.$refs.markdown.innerText += (start + end)
-          this.$refs.markdown.scrollTop = this.$refs.markdown.scrollHeight
-        }
-        this.commentContentChange()
-      },
-      clearCommentContent(content) {
-        this.comemntContentHtml = ''
-        this.$refs.markdown.innerHTML = this.comemntContentHtml
-        this.commentContentChange()
-      },
-      insertContent(type) {
-        const contents = {
-          image: {
-            start: `![`,
-            end: `](https://)`
-          },
-          link: {
-            start: `[`,
-            end: `](https://)`
-          },
-          code: {
-            start: '\n```javascript\n',
-            end: '\n```'
-          }
-        }
-        this.updateCommentContent(contents[type])
-      },
-      insertEmoji(emoji) {
-        this.updateCommentContent({ end: emoji })
-      },
-      // 切换预览模式
-      togglePreviewMode() {
-        this.previewContent = this.marked(this.comemntContentText)
-        this.previewMode = !this.previewMode
-      },
-      // 评论排序
-      sortComemnts(sort) {
-        if (this.sortMode !== sort) {
-          this.sortMode = sort
-          this.loadComemntList()
-        }
-      },
-      // 翻页反向计算
-      paginationReverseActive(index) {
-        const pagination = this.comment.pagination
-        return Object.is(index, pagination.total_page + 1 - pagination.current_page)
-      },
-      // 点击用户
-      clickUser(event, user) {
-        if (!user.site) event.preventDefault()
-      },
-      // 跳转到某条指定的id位置
-      toSomeAnchorById(id) {
-        const targetDom = document.getElementById(id)
-        if (targetDom) {
-          const isToEditor = Object.is(id, 'post-box')
-          scrollTo(targetDom, 200, { offset: isToEditor ? 0 : -300 })
-          // 如果是进入编辑模式，则需要激活光标
-          if (isToEditor) {
-            const p = this.$refs.markdown
-            const s = window.getSelection()
-            const r = document.createRange()
-            r.setStart(p, p.childElementCount)
-            r.setEnd(p, p.childElementCount)
-            s.removeAllRanges()
-            s.addRange(r)
-          }
-        }
-      },
-      // 回复评论
-      replyComment(comment) {
-        this.pid = comment.id
-        this.toSomeAnchorById('post-box')
-      },
-      // 取消回复
-      cancelCommentReply() {
-        this.pid = 0
-      },
-      // 找到回复来源
-      fondReplyParent(comment_id) {
-        const parent = this.comment.data.find(comment => Object.is(comment.id, comment_id))
-        return parent ? parent.author.name : null
-      },
-      // 喜欢当前页面
-      likePage() {
-        if (this.isLikedPage) {
-          return false
-        }
-        this.$store.dispatch('likeArticleOrPageOrComment', { type: 2, id: this.postId })
+    // 回复评论
+    replyComment(comment) {
+      this.pid = comment.id
+      this.toSomeAnchorById('post-box')
+    },
+    // 取消回复
+    cancelCommentReply() {
+      this.pid = 0
+    },
+    // 找到回复来源
+    fondReplyParent(comment_id) {
+      const parent = this.comment.data.find(comment =>
+        Object.is(comment.id, comment_id)
+      )
+      return parent ? parent.author.name : null
+    },
+    // 喜欢当前页面
+    likePage() {
+      if (this.isLikedPage) {
+        return false
+      }
+      this.$store
+        .dispatch('likeArticleOrPageOrComment', { type: 2, id: this.postId })
         .then(data => {
           this.historyLikes.pages.push(this.postId)
-          localStorage.setItem('user_like_history', JSON.stringify(this.historyLikes))
+          localStorage.setItem(
+            'user_like_history',
+            JSON.stringify(this.historyLikes)
+          )
         })
         .catch(err => {
           console.warn('喜欢失败', err)
           alert('操作失败，原因 -> 控制台')
         })
-      },
-      // 点赞某条评论
-      likeComment(comment) {
-        if (this.getCommentLiked(comment.id)) return false
-        this.$store.dispatch('likeArticleOrPageOrComment', { type: 1, id: comment.id })
+    },
+    // 点赞某条评论
+    likeComment(comment) {
+      if (this.getCommentLiked(comment.id)) return false
+      this.$store
+        .dispatch('likeArticleOrPageOrComment', { type: 1, id: comment.id })
         .then(data => {
           this.historyLikes.comments.push(comment.id)
-          localStorage.setItem('user_like_history', JSON.stringify(this.historyLikes))
+          localStorage.setItem(
+            'user_like_history',
+            JSON.stringify(this.historyLikes)
+          )
         })
         .catch(err => {
           console.warn('评论点赞失败', err)
           alert('操作失败，原因 -> 控制台')
         })
-      },
-      // 获取某条评论是否被点赞
-      getCommentLiked(comment_id) {
-        return this.historyLikes.comments&&this.historyLikes.comments.includes(comment_id)
-      },
-       // 获取评论列表
-      loadComemntList(params = {}) {
-        params.sort = this.sortMode
-        this.$store.dispatch('loadCommentsByPostId', Object.assign(params, { post_id: this.postId }))
-      },
-      // 提交评论
-      submitComment(event) {
-        // 为了使用原生表单拦截，不使用事件修饰符
-        event.preventDefault()
-        if (!this.user.name) {
-          return alert('名字' + '?')
-        }
-        if (!this.user.email) {
-          return alert('邮箱' + '?')
-        }
-        if (!this.regexs.email.test(this.user.email)) {
-          return alert('邮箱不合法')
-        }
-        if (this.user.site && !this.regexs.url.test(this.user.site)) {
-          return alert('网址不合法')
-        }
-        if (!this.comemntContentText || !this.comemntContentText.replace(/\s/g, '')) {
-          return alert('内容' + '?')
-        }
-        const lineOverflow = this.comemntContentText.split('\n').length > 36
-        const lengthOverflow = this.comemntContentText.length > 2000
-        if (lineOverflow || lengthOverflow) {
-          return alert('内容需要在 2000字/36行 以内')
-        }
-        // 使用服务单配置的黑名单在本地校验邮箱和关键字
-        if (this.blacklist.mails&&this.blacklist.mails.includes(this.user.email) || 
-           (this.blacklist.keywords&&this.blacklist.keywords.length && 
-            eval(`/${this.blacklist.keywords.join('|')}/ig`).test(this.comemntContentText))) {
-          alert('发布失败，原因 -> 控制台')
-          console.warn('评论发布失败\n1：被 Akismet 过滤\n2：邮箱/IP 被列入黑名单\n3：内容包含黑名单关键词')
-          return false
-        }
-        if (!this.user.site) {
-          Reflect.deleteProperty(this.user, 'site')
-        }
-        this.$store.dispatch('postComment', {
+    },
+    // 获取某条评论是否被点赞
+    getCommentLiked(comment_id) {
+      return (
+        this.historyLikes.comments &&
+        this.historyLikes.comments.includes(comment_id)
+      )
+    },
+    // 获取评论列表
+    loadComemntList(params = {}) {
+      params.sort = this.sortMode
+      this.$store.dispatch(
+        'loadCommentsByPostId',
+        Object.assign(params, { post_id: this.postId })
+      )
+    },
+    // 提交评论
+    submitComment(event) {
+      // 为了使用原生表单拦截，不使用事件修饰符
+      event.preventDefault()
+      if (!this.user.name) {
+        return alert('名字' + '?')
+      }
+      if (!this.user.email) {
+        return alert('邮箱' + '?')
+      }
+      if (!this.regexs.email.test(this.user.email)) {
+        return alert('邮箱不合法')
+      }
+      if (this.user.site && !this.regexs.url.test(this.user.site)) {
+        return alert('网址不合法')
+      }
+      if (
+        !this.comemntContentText ||
+        !this.comemntContentText.replace(/\s/g, '')
+      ) {
+        return alert('内容' + '?')
+      }
+      const lineOverflow = this.comemntContentText.split('\n').length > 36
+      const lengthOverflow = this.comemntContentText.length > 2000
+      if (lineOverflow || lengthOverflow) {
+        return alert('内容需要在 2000字/36行 以内')
+      }
+      // 使用服务单配置的黑名单在本地校验邮箱和关键字
+      if (
+        (this.blacklist.mails &&
+          this.blacklist.mails.includes(this.user.email)) ||
+        (this.blacklist.keywords &&
+          this.blacklist.keywords.length &&
+          eval(`/${this.blacklist.keywords.join('|')}/ig`).test(
+            this.comemntContentText
+          ))
+      ) {
+        alert('发布失败，原因 -> 控制台')
+        console.warn(
+          '评论发布失败\n1：被 Akismet 过滤\n2：邮箱/IP 被列入黑名单\n3：内容包含黑名单关键词'
+        )
+        return false
+      }
+      if (!this.user.site) {
+        Reflect.deleteProperty(this.user, 'site')
+      }
+      this.$store
+        .dispatch('postComment', {
           pid: this.pid,
           post_id: this.postId,
           content: this.comemntContentText,
           author: this.user,
           agent: navigator.userAgent
-        }).then(data => {
+        })
+        .then(data => {
           // 发布成功后清空评论框内容并更新本地信息
           const content = data.result.content
           const emoji233333 = this.$root.$emoji233333
@@ -706,7 +796,7 @@
                 emoji,
                 speed: 12,
                 staggered: true,
-                increaseSpeed: 0.4,
+                increaseSpeed: 0.4
               })
               preImage(emoji, emoji233333.launch.bind(emoji233333))
             } else if (content.includes('666')) {
@@ -720,7 +810,12 @@
               preImage(emoji, emoji233333.launch.bind(emoji233333))
             } else if (content.includes('呵呵')) {
               const emoji = `${this.cdnUrl}/images/emojis/hehe.png`
-              emoji233333.update({ emoji, staggered: false, speed: 8, increaseSpeed: 0.04 })
+              emoji233333.update({
+                emoji,
+                staggered: false,
+                speed: 8,
+                increaseSpeed: 0.04
+              })
               preImage(emoji, emoji233333.launch.bind(emoji233333))
             }
           }
@@ -729,753 +824,410 @@
           this.cancelCommentReply()
           this.clearCommentContent()
           localUser.set(this.user)
-        }).catch(error => {
-          console.warn('评论发布失败，可能原因：被 Akismet 过滤，或者：\n', error)
+        })
+        .catch(error => {
+          console.warn(
+            '评论发布失败，可能原因：被 Akismet 过滤，或者：\n',
+            error
+          )
           alert('发布失败，原因 -> 控制台')
         })
-      }
     }
   }
+}
 </script>
 
 <style lang="scss">
-  .cm-content,
-  .reply-preview,
-  .markdown-preview {
-    font-size: 1em;
-    line-height: 2em;
-    margin: .5em 0;
-    word-wrap: break-word;
+.cm-content,
+.reply-preview,
+.markdown-preview {
+  font-size: 1em;
+  line-height: 2em;
+  margin: 0.5em 0;
+  word-wrap: break-word;
 
-    a {
-      text-decoration: underline;
-    }
-
-    img {
-      margin: .5rem 0;
-      max-width: 100%;
-      border-radius: 2px;
-      cursor: pointer;
-    }
-
-    p {
-      margin: 0;
-    }
-
-    code {
-      color: #bd4147;
-      padding: .3em .5em;
-      margin: 0 .5em;
-      border-radius: $radius;
-      background-color: $module-hover-bg;
-    }
-
-    pre {
-      display: flex;
-      align-items: baseline;
-      flex-wrap: wrap-reverse;
-      position: relative;
-      overflow: hidden;
-      margin-top: .6em;
-      margin-bottom: 1em;
-      padding-top: 2.5em;
-      border-radius: $radius;
-      background-color: rgba(0, 0, 0, 0.8);
-
-      &:before {
-        color: white;
-        content: attr(data-lang)" CODE";
-        height: 2.5em;
-        line-height: 2.5em;
-        font-size: 1em;
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        font-weight: 700;
-        background-color: rgba(68, 68, 68, 0.9);
-        display: block;
-        text-transform: uppercase;
-        text-align: center;
-      }
-
-      > .code-lines {
-        display: none;
-      }
-
-      > code {
-        margin: 0;
-        padding: 1em;
-        float: left;
-        width: 100%;
-        height: 100%;
-        display: block;
-        line-height: 1.6em;
-        color: rgba(255, 255, 255, 0.87);
-        background-color: transparent;
-      }
-    }
+  a {
+    text-decoration: underline;
   }
 
-  #comment-box {
-    background-color: $module-bg;
-    padding: 1em;
+  img {
+    margin: 0.5rem 0;
+    max-width: 100%;
+    border-radius: 2px;
+    cursor: pointer;
+  }
 
-    &.mobile {
+  p {
+    margin: 0;
+  }
 
-      > .list-box {
+  code {
+    color: #bd4147;
+    padding: 0.3em 0.5em;
+    margin: 0 0.5em;
+    border-radius: $radius;
+    background-color: $module-hover-bg;
+  }
 
-        > .comment-list {
+  pre {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap-reverse;
+    position: relative;
+    overflow: hidden;
+    margin-top: 0.6em;
+    margin-bottom: 1em;
+    padding-top: 2.5em;
+    border-radius: $radius;
+    background-color: rgba(0, 0, 0, 0.8);
 
-          > .comment-item {
-            padding: 0;
-            margin-bottom: 1rem;
-
-            > .cm-body {
-              padding: .6em;
-            }
-          }
-        }
-      }
-
-      > .post-box {
-
-        > .user {
-          padding: 0;
-          height: auto;
-          flex-direction: column;
-
-          > .name,
-          > .email,
-          > .site,
-          > .save {
-            width: 80%;
-            margin-left: 0;
-            margin-right: 0;
-            margin-bottom: 1rem;
-          }
-
-          > .save {
-            width: 30%;
-            margin-bottom: 0;
-          }
-        }
-
-        > .editor-box {
-
-          > .user {
-            margin: 0;
-          }
-        }
-      }
-    }
-
-    > .tools {
-      display: flex;
-      padding: 1em 0;
-      padding-top: 0;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid $module-hover-bg;
-      margin-bottom: .6em;
-
-      .count-skeleton,
-      .like-skeleton,
-      .sort-skeleton {
-        height: 2rem;
-      }
-      
-      .total-skeleton {
-        display: flex;
-        width: 70%;
-
-        .count-skeleton {
-          width: 20%;
-          margin-right: 1rem;
-        }
-
-        .like-skeleton {
-          width: 40%;
-        }
-      }
-      
-      .sort-skeleton {
-        width: 20%;
-      }
-
-      > .total {
-        display: flex;
-        font-size: 1em;
-
-        > .like,
-        > .shang,
-        > .count {
-          padding: .2em .5em;
-          background-color: $module-hover-bg;
-        }
-
-        @keyframes shangBtnBg {
-          0%   {
-            background: $primary-opacity-9;
-          }
-          50% {
-            background: rgba($accent, .8);
-          }
-          100% {
-            background: $primary-opacity-9;
-          }
-        }
-
-        > .shang {
-          margin-left: .5em;
-          color: white;
-          animation: shangBtnBg 1s infinite;
-        }
-
-        > .like {
-          margin-left: .5em;
-
-          > .iconfont {
-            margin-right: .5rem;
-          }
-
-          &:hover {
-            background-color: $module-hover-bg-darken-20;
-          }
-
-          &.liked {
-
-            > .iconfont {
-              color: $red;
-            }
-          }
-        }
-      }
-
-      > .sort {
-
-        > .sort-btn {
-          margin-left: 1em;
-
-          &.actived {
-            color: $black;
-            font-weight: bold;
-          }
-        }
-      }
-    }
-
-    > .list-skeleton {
-
-      .comment-item {
-        padding-left: 0!important;
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-
-        .gravatar {
-          width: 5rem;
-          height: 5rem;
-        }
-
-        .content {
-          width: calc((100% - 5rem) * 0.9);
-        }
-      }
-    }
-
-    > .empty-box {
-      font-weight: bold;
+    &:before {
+      color: white;
+      content: attr(data-lang) ' CODE';
+      height: 2.5em;
+      line-height: 2.5em;
+      font-size: 1em;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      font-weight: 700;
+      background-color: rgba(68, 68, 68, 0.9);
+      display: block;
+      text-transform: uppercase;
       text-align: center;
-      height: 5rem;
-      line-height: 5rem;
     }
 
+    > .code-lines {
+      display: none;
+    }
+
+    > code {
+      margin: 0;
+      padding: 1em;
+      float: left;
+      width: 100%;
+      height: 100%;
+      display: block;
+      line-height: 1.6em;
+      color: rgba(255, 255, 255, 0.87);
+      background-color: transparent;
+    }
+  }
+}
+
+#comment-box {
+  background-color: $module-bg;
+  padding: 1em;
+
+  &.mobile {
     > .list-box {
-
       > .comment-list {
-        padding: 0;
-        margin: 0;
-        list-style-type: none;
-
         > .comment-item {
-          position: relative;
-          padding: .6em 0 .6em 1.5em;
-
-          &:hover {
-
-            > .cm-avatar {
-
-              > a {
-                > img {
-                  transition: transform .5s ease-out;
-                  transform: rotate(360deg);
-                }
-              }
-            }
-
-            > .cm-body {
-              background-color: $module-hover-bg-darken-20;
-            }
-          }
-
-          > .cm-avatar {
-            display: block;
-            position: absolute;
-            left: 0;
-            top: 2em;
-            background-color: $module-hover-bg;
-
-            > a {
-              display: block;
-              border: .3em solid $module-bg;
-              width: 4em;
-              height: 4em;
-
-              > img {
-                width: 100%;
-                height: 100%;
-                transition: transform .5s ease-out;
-              }
-            }
-          }
+          padding: 0;
+          margin-bottom: 1rem;
 
           > .cm-body {
-            display: block;
-            width: 100%;
-            height: 100%;
-            padding: .6em .6em .6em 3.2em;
-            background-color: $module-hover-bg;
-
-            > .cm-header {
-              display: block;
-              position: relative;
-
-              > .user-name {
-                font-weight: bold;
-                margin-right: .8em;
-                // font-family: Microsoft YaHei,Arial,Helvetica,sans-serif;
-
-                &:hover {
-                  text-decoration: underline;
-                } 
-              }
-
-              > .os,
-              > .ua,
-              > .location {
-                color: $disabled;
-                font-size: .8em;
-                margin-right: .8em;
-
-                .iconfont {
-                  margin-right: .2em;
-                }
-              }
-
-              > .flool {
-                color: $dividers;
-                font-weight: 900;
-                font-size: .8em;
-                display: inline-block;
-                line-height: 2rem;
-                float: right;
-              }
-            }
-
-            > .cm-content {
-              font-size: .95em;
-
-              > .reply {
-                color: $disabled;
-                font-weight: bold;
-
-                > a {
-                  text-decoration: none;
-                }
-              }
-            }
-
-            > .cm-footer {
-              display: flex;
-              align-items:center;
-              > .create_at,
-              > .reply,
-              > .like {
-                font-size: .8em;
-                margin-right: 1em;
-              }
-
-              > .create_at {
-                color: $disabled;
-              }
-
-              > .like {
-
-                &:hover {
-                  color: $red;
-                }
-
-                &.liked {
-                  color: $red;
-                  font-weight: bold;
-                }
-
-                &.actived {
-                  font-weight: bold;
-
-                  &:hover {
-                    color: $red;
-                  }
-                }
-              }
-
-              > .reply,
-              > .like {
-                opacity: .8;
-
-                > .iconfont {
-                  opacity: .8;
-                  margin-right: .2em;
-                }
-
-                &:hover {
-                  opacity: 1;
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-    > .pagination-box {
-      margin-top: .5rem;
-
-      > .pagination-list {
-        margin: 0;
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        list-style-type: none;
-
-        > .item {
-          margin: 0 0.5em;
-
-          > .pagination-btn {
-            display: inline-block;
-            width: 2rem;
-            height: 2rem;
-            display: inline-block;
-            line-height: 2rem;
-            text-align: center;
-
-            &.prev,
-            &.next {
-              width: 5em;
-              font-size: .9em;
-
-              &:hover {
-                background: none;
-              }
-            }
-
-            &.disabled {
-              cursor: no-drop;
-              opacity: .5;
-            }
-
-            &.actived,
-            &:hover {
-              background-color: $module-hover-bg;
-            }
+            padding: 0.6em;
           }
         }
       }
     }
 
     > .post-box {
-      display: block;
-      border-top: 1px dashed $module-hover-bg-darken-20;
-      margin-top: 1rem;
-      padding-top: 1rem;
-
       > .user {
-        width: 100%;
-        height: 2em;
-        line-height: 2em;
-        display: flex;
-        margin-bottom: 1rem;
-        padding-left: 5.2rem;
-
-        > .edit {
-          flex-grow: 1;
-          text-align: right;
-          line-height: 2em;
-          position: relative;
-
-          > .name {
-            // font-family: DINRegular, -apple-system, Microsoft YaHei, Arial, Helvetica, sans-serif;
-          }
-
-          > .setting {
-            font-size: 1rem;
-            margin-left: 1rem;
-            display: inline-block;
-            position: relative;
-
-            &:hover {
-
-              > .user-tool {
-                display: block;
-              }
-            }
-
-            > .iconfont {
-              margin-right: .5rem;
-            }
-
-            > .account-setting {
-              text-transform: capitalize;
-            }
-
-            > .user-tool {
-              display: none;
-              position: absolute;
-              right: 0;
-              top: 2em;
-              margin: 0;
-              padding: 0;
-              padding-top: .5rem;
-              list-style-type: square;
-              z-index: 99;
-              color: $white;
-
-              > li {
-                padding: 0 1rem;
-                background-color: rgba(green, 0.5);
-              }
-
-              > li:hover {
-                background-color: rgba(green, 0.8);
-              }
-            }
-          }
-        }
-
-        > .save {
-          width: 10%;
-          margin-left: 1em;
-          flex-grow: 1;
-          line-height: 2em;
-          text-align: center;
-          // font-family: Microsoft YaHei,Arial,Helvetica,sans-serif;
-
-          > button {
-            display: block;
-            width: 100%;
-            background-color: $module-hover-bg;
-
-            &:hover {
-              background-color: $module-hover-bg-darken-10;
-            }
-          }
-        }
+        padding: 0;
+        height: auto;
+        flex-direction: column;
 
         > .name,
         > .email,
-        > .site {
-          // font-family: Microsoft YaHei,Arial,Helvetica,sans-serif;
-          flex-grow: 1;
-
-          > input {
-            width: 100%;
-            height: 2em;
-            background-color: $module-hover-bg;
-
-            &:focus,
-            &:hover {
-              background-color: $module-hover-bg-darken-10;
-            }
-          }
+        > .site,
+        > .save {
+          width: 80%;
+          margin-left: 0;
+          margin-right: 0;
+          margin-bottom: 1rem;
         }
 
-        > .name,
-        > .email {
-          margin-right: 1em;
+        > .save {
+          width: 30%;
+          margin-bottom: 0;
         }
       }
 
       > .editor-box {
-        width: 100%;
-        display: flex;
-
         > .user {
-          margin-right: 1em;
+          margin: 0;
+        }
+      }
+    }
+  }
 
-          > .gravatar {
-            display: block;
-            margin-bottom: .5em;
-            width: 4rem;
-            height: 4rem;
+  > .tools {
+    display: flex;
+    padding: 1em 0;
+    padding-top: 0;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid $module-hover-bg;
+    margin-bottom: 0.6em;
+
+    .count-skeleton,
+    .like-skeleton,
+    .sort-skeleton {
+      height: 2rem;
+    }
+
+    .total-skeleton {
+      display: flex;
+      width: 70%;
+
+      .count-skeleton {
+        width: 20%;
+        margin-right: 1rem;
+      }
+
+      .like-skeleton {
+        width: 40%;
+      }
+    }
+
+    .sort-skeleton {
+      width: 20%;
+    }
+
+    > .total {
+      display: flex;
+      font-size: 1em;
+
+      > .like,
+      > .shang,
+      > .count {
+        padding: 0.2em 0.5em;
+        background-color: $module-hover-bg;
+      }
+
+      @keyframes shangBtnBg {
+        0% {
+          background: $primary-opacity-9;
+        }
+        50% {
+          background: rgba($accent, 0.8);
+        }
+        100% {
+          background: $primary-opacity-9;
+        }
+      }
+
+      > .shang {
+        margin-left: 0.5em;
+        color: white;
+        animation: shangBtnBg 1s infinite;
+      }
+
+      > .like {
+        margin-left: 0.5em;
+
+        > .iconfont {
+          margin-right: 0.5rem;
+        }
+
+        &:hover {
+          background-color: $module-hover-bg-darken-20;
+        }
+
+        &.liked {
+          > .iconfont {
+            color: $red;
+          }
+        }
+      }
+    }
+
+    > .sort {
+      > .sort-btn {
+        margin-left: 1em;
+
+        &.actived {
+          color: $black;
+          font-weight: bold;
+        }
+      }
+    }
+  }
+
+  > .list-skeleton {
+    .comment-item {
+      padding-left: 0 !important;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+
+      .gravatar {
+        width: 5rem;
+        height: 5rem;
+      }
+
+      .content {
+        width: calc((100% - 5rem) * 0.9);
+      }
+    }
+  }
+
+  > .empty-box {
+    font-weight: bold;
+    text-align: center;
+    height: 5rem;
+    line-height: 5rem;
+  }
+
+  > .list-box {
+    > .comment-list {
+      padding: 0;
+      margin: 0;
+      list-style-type: none;
+
+      > .comment-item {
+        position: relative;
+        padding: 0.6em 0 0.6em 1.5em;
+
+        &:hover {
+          > .cm-avatar {
+            > a {
+              > img {
+                transition: transform 0.5s ease-out;
+                transform: rotate(360deg);
+              }
+            }
+          }
+
+          > .cm-body {
             background-color: $module-hover-bg-darken-20;
+          }
+        }
+
+        > .cm-avatar {
+          display: block;
+          position: absolute;
+          left: 0;
+          top: 2em;
+          background-color: $module-hover-bg;
+
+          > a {
+            display: block;
+            border: 0.3em solid $module-bg;
+            width: 4em;
+            height: 4em;
 
             > img {
               width: 100%;
               height: 100%;
-              transition: transform .5s ease-out;
+              transition: transform 0.5s ease-out;
             }
           }
         }
 
-        > .editor {
-          flex-grow: 1;
-          position: relative;
-          overflow: hidden;
+        > .cm-body {
+          display: block;
+          width: 100%;
+          height: 100%;
+          padding: 0.6em 0.6em 0.6em 3.2em;
+          background-color: $module-hover-bg;
 
-          > .will-reply {
-            font-size: .95em;
-            margin-bottom: 1em;
+          > .cm-header {
+            display: block;
+            position: relative;
 
-            > .reply-user {
-              display: flex;
-              justify-content: space-between;
-              margin-bottom: 1rem;
-              padding: 0 1rem;
-              height: 2.6em;
-              line-height: 2.6em;
-              background-color: $module-hover-bg;
+            > .user-name {
+              font-weight: bold;
+              margin-right: 0.8em;
+              // font-family: Microsoft YaHei,Arial,Helvetica,sans-serif;
 
-               &:hover {
-                background-color: $module-hover-bg-darken-10;
+              &:hover {
+                text-decoration: underline;
               }
             }
 
-            > .reply-preview {
-              max-height: 10em;
-              overflow: auto;
-              padding: 1rem;
+            > .os,
+            > .ua,
+            > .location {
+              color: $disabled;
+              font-size: 0.8em;
+              margin-right: 0.8em;
 
-              background-color: $module-hover-bg;
+              .iconfont {
+                margin-right: 0.2em;
+              }
+            }
 
-               &:hover {
-                background-color: $module-hover-bg-darken-10;
+            > .flool {
+              color: $dividers;
+              font-weight: 900;
+              font-size: 0.8em;
+              display: inline-block;
+              line-height: 2rem;
+              float: right;
+            }
+          }
+
+          > .cm-content {
+            font-size: 0.95em;
+
+            > .reply {
+              color: $disabled;
+              font-weight: bold;
+
+              > a {
+                text-decoration: none;
               }
             }
           }
 
-          > .markdown {
-            position: relative;
-            overflow: hidden;
-
-            > .markdown-editor {
-              min-height: 6em;
-              max-height: 36em;
-              overflow: auto;
-              outline: none;
-              padding: .5em;
-              cursor: auto;
-              font-size: .95em;
-              line-height: 1.8em;
-              background-color: $module-hover-bg;
-
-              &:empty:before{
-                content: attr(placeholder);
-                color: $disabled;
-              }
-
-              &:focus{
-                content:none;
-              }
-
-              &:hover {
-                background-color: $module-hover-bg-darken-10;
-              }
+          > .cm-footer {
+            display: flex;
+            align-items: center;
+            > .create_at,
+            > .reply,
+            > .like {
+              font-size: 0.8em;
+              margin-right: 1em;
             }
 
-            > .markdown-preview {
-              position: absolute;
-              top: 0;
-              left: 0;
-              width: 100%;
-              height: 0;
-              overflow: auto;
-              margin: 0;
-              padding: .5em;
-              @include css3-prefix(transform, translateY(-100%));
-              background-color: rgba(235, 235, 235, 0.85);
-              transition: transform .2s;
+            > .create_at {
+              color: $disabled;
+            }
+
+            > .like {
+              &:hover {
+                color: $red;
+              }
+
+              &.liked {
+                color: $red;
+                font-weight: bold;
+              }
 
               &.actived {
-                height: 100%;
-                transition: transform .2s;
-                @include css3-prefix(transform, translateY(0));
-              }
-            }
-          }
+                font-weight: bold;
 
-          > .editor-tools {
-            height: 2em;
-            line-height: 2em;
-            background-color: $module-hover-bg-opacity-9;
-
-            > .emoji {
-
-              > .emoji-box {
-                display: none;
-                position: absolute;
-                bottom: 2em;
-                left: 0;
-                background-color: $module-bg;
-
-                > .emoji-list {
-                  list-style: none;
-                  padding: 0;
-                  margin: 0;
-                  font-size: 1.3em;
-                  display: flex;
-                  flex-wrap: wrap;
-
-                  > .item {
-                    padding: 0 .4em;
-                    cursor: pointer;
-
-                    &:hover {
-                      background-color: $module-hover-bg;
-                    }
-                  }
-                }
-              }
-
-              &:hover {
-                > .emoji-box {
-                  display: block;
+                &:hover {
+                  color: $red;
                 }
               }
             }
 
-            > .emoji,
-            > .image,
-            > .link,
-            > .code,
-            > .preview {
-              width: 2em;
-              //height: 2em;
-              text-align: center;
-              display: inline-block;
+            > .reply,
+            > .like {
+              opacity: 0.8;
 
-              &:hover {
-                background-color: $module-hover-bg-darken-20;
+              > .iconfont {
+                opacity: 0.8;
+                margin-right: 0.2em;
               }
-            }
-
-            > .submit {
-              float: right;
-              width: 7em;
-              background-color: $module-hover-bg-darken-20;
 
               &:hover {
-                background-color: $module-hover-bg-darken-40;
+                opacity: 1;
               }
             }
           }
@@ -1483,4 +1235,337 @@
       }
     }
   }
+
+  > .pagination-box {
+    margin-top: 0.5rem;
+
+    > .pagination-list {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      list-style-type: none;
+
+      > .item {
+        margin: 0 0.5em;
+
+        > .pagination-btn {
+          display: inline-block;
+          width: 2rem;
+          height: 2rem;
+          display: inline-block;
+          line-height: 2rem;
+          text-align: center;
+
+          &.prev,
+          &.next {
+            width: 5em;
+            font-size: 0.9em;
+
+            &:hover {
+              background: none;
+            }
+          }
+
+          &.disabled {
+            cursor: no-drop;
+            opacity: 0.5;
+          }
+
+          &.actived,
+          &:hover {
+            background-color: $module-hover-bg;
+          }
+        }
+      }
+    }
+  }
+
+  > .post-box {
+    display: block;
+    border-top: 1px dashed $module-hover-bg-darken-20;
+    margin-top: 1rem;
+    padding-top: 1rem;
+
+    > .user {
+      width: 100%;
+      height: 2em;
+      line-height: 2em;
+      display: flex;
+      margin-bottom: 1rem;
+      padding-left: 5.2rem;
+
+      > .edit {
+        flex-grow: 1;
+        text-align: right;
+        line-height: 2em;
+        position: relative;
+
+        > .name {
+          // font-family: DINRegular, -apple-system, Microsoft YaHei, Arial, Helvetica, sans-serif;
+        }
+
+        > .setting {
+          font-size: 1rem;
+          margin-left: 1rem;
+          display: inline-block;
+          position: relative;
+
+          &:hover {
+            > .user-tool {
+              display: block;
+            }
+          }
+
+          > .iconfont {
+            margin-right: 0.5rem;
+          }
+
+          > .account-setting {
+            text-transform: capitalize;
+          }
+
+          > .user-tool {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 2em;
+            margin: 0;
+            padding: 0;
+            padding-top: 0.5rem;
+            list-style-type: square;
+            z-index: 99;
+            color: $white;
+
+            > li {
+              padding: 0 1rem;
+              background-color: rgba(green, 0.5);
+            }
+
+            > li:hover {
+              background-color: rgba(green, 0.8);
+            }
+          }
+        }
+      }
+
+      > .save {
+        width: 10%;
+        margin-left: 1em;
+        flex-grow: 1;
+        line-height: 2em;
+        text-align: center;
+        // font-family: Microsoft YaHei,Arial,Helvetica,sans-serif;
+
+        > button {
+          display: block;
+          width: 100%;
+          background-color: $module-hover-bg;
+
+          &:hover {
+            background-color: $module-hover-bg-darken-10;
+          }
+        }
+      }
+
+      > .name,
+      > .email,
+      > .site {
+        // font-family: Microsoft YaHei,Arial,Helvetica,sans-serif;
+        flex-grow: 1;
+
+        > input {
+          width: 100%;
+          height: 2em;
+          background-color: $module-hover-bg;
+
+          &:focus,
+          &:hover {
+            background-color: $module-hover-bg-darken-10;
+          }
+        }
+      }
+
+      > .name,
+      > .email {
+        margin-right: 1em;
+      }
+    }
+
+    > .editor-box {
+      width: 100%;
+      display: flex;
+
+      > .user {
+        margin-right: 1em;
+
+        > .gravatar {
+          display: block;
+          margin-bottom: 0.5em;
+          width: 4rem;
+          height: 4rem;
+          background-color: $module-hover-bg-darken-20;
+
+          > img {
+            width: 100%;
+            height: 100%;
+            transition: transform 0.5s ease-out;
+          }
+        }
+      }
+
+      > .editor {
+        flex-grow: 1;
+        position: relative;
+        overflow: hidden;
+
+        > .will-reply {
+          font-size: 0.95em;
+          margin-bottom: 1em;
+
+          > .reply-user {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding: 0 1rem;
+            height: 2.6em;
+            line-height: 2.6em;
+            background-color: $module-hover-bg;
+
+            &:hover {
+              background-color: $module-hover-bg-darken-10;
+            }
+          }
+
+          > .reply-preview {
+            max-height: 10em;
+            overflow: auto;
+            padding: 1rem;
+
+            background-color: $module-hover-bg;
+
+            &:hover {
+              background-color: $module-hover-bg-darken-10;
+            }
+          }
+        }
+
+        > .markdown {
+          position: relative;
+          overflow: hidden;
+
+          > .markdown-editor {
+            min-height: 6em;
+            max-height: 36em;
+            overflow: auto;
+            outline: none;
+            padding: 0.5em;
+            cursor: auto;
+            font-size: 0.95em;
+            line-height: 1.8em;
+            background-color: $module-hover-bg;
+
+            &:empty:before {
+              content: attr(placeholder);
+              color: $disabled;
+            }
+
+            &:focus {
+              content: none;
+            }
+
+            &:hover {
+              background-color: $module-hover-bg-darken-10;
+            }
+          }
+
+          > .markdown-preview {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 0;
+            overflow: auto;
+            margin: 0;
+            padding: 0.5em;
+            @include css3-prefix(transform, translateY(-100%));
+            background-color: rgba(235, 235, 235, 0.85);
+            transition: transform 0.2s;
+
+            &.actived {
+              height: 100%;
+              transition: transform 0.2s;
+              @include css3-prefix(transform, translateY(0));
+            }
+          }
+        }
+
+        > .editor-tools {
+          height: 2em;
+          line-height: 2em;
+          background-color: $module-hover-bg-opacity-9;
+
+          > .emoji {
+            > .emoji-box {
+              display: none;
+              position: absolute;
+              bottom: 2em;
+              left: 0;
+              background-color: $module-bg;
+
+              > .emoji-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                font-size: 1.3em;
+                display: flex;
+                flex-wrap: wrap;
+
+                > .item {
+                  padding: 0 0.4em;
+                  cursor: pointer;
+
+                  &:hover {
+                    background-color: $module-hover-bg;
+                  }
+                }
+              }
+            }
+
+            &:hover {
+              > .emoji-box {
+                display: block;
+              }
+            }
+          }
+
+          > .emoji,
+          > .image,
+          > .link,
+          > .code,
+          > .preview {
+            width: 2em;
+            //height: 2em;
+            text-align: center;
+            display: inline-block;
+
+            &:hover {
+              background-color: $module-hover-bg-darken-20;
+            }
+          }
+
+          > .submit {
+            float: right;
+            width: 7em;
+            background-color: $module-hover-bg-darken-20;
+
+            &:hover {
+              background-color: $module-hover-bg-darken-40;
+            }
+          }
+        }
+      }
+    }
+  }
+}
 </style>
