@@ -1,19 +1,19 @@
 /**
  * @file 根数据状态,存放全局数据和异步方法 / ES module
  * @module store/entry
- * 
+ *
  */
 
 import Vue from 'vue'
-import apiConfig from '~/api.config'
-import { isBrowser, isServer } from '~/environment'
+import apiConfig from '~/config/api.config'
+import { isBrowser, isServer } from '~/environment/index'
 import uaDevice from '~/utils/ua-device'
 import { scrollTo, Easing } from '~/utils/scroll-to-anywhere'
 
 const API_PREFIX = apiConfig.baseUrl
 
 // 兼容 Axios 在不同协议的不同表现
-const getResData = response => response.status ? response.data : response
+const getResData = response => (response.status ? response.data : response)
 const resIsSuccess = response => {
   // HTTP2
   if (response.status) {
@@ -25,14 +25,24 @@ const resIsSuccess = response => {
 
 // global actions
 export const actions = {
-
   // 全局服务初始化
   nuxtServerInit(store, { req, params, route }) {
-
     // 检查设备类型
     const userAgent = isServer ? req.headers['user-agent'] : navigator.userAgent
-    const { isMobile, isOpera, isIE, isSafari, isEdge, isFF, isBB, isChrome, isMaxthon, isIos } = uaDevice(userAgent || '')
-    const mustJpg = (isIos || isFF || isMaxthon || isSafari || isBB || isIE || isEdge)
+    const {
+      isMobile,
+      isOpera,
+      isIE,
+      isSafari,
+      isEdge,
+      isFF,
+      isBB,
+      isChrome,
+      isMaxthon,
+      isIos
+    } = uaDevice(userAgent || '')
+    const mustJpg =
+      isIos || isFF || isMaxthon || isSafari || isBB || isIE || isEdge
 
     store.commit('option/SET_USER_AGENT', userAgent)
     store.commit('option/SET_MOBILE_LAYOUT', isMobile)
@@ -70,7 +80,8 @@ export const actions = {
   // 获取博主资料
   loadAdminInfo({ commit }) {
     commit('option/REQUEST_ADMIN_INFO')
-    return this.$axios.$get(`${API_PREFIX}/auth`)
+    return this.$axios
+      .$get(`${API_PREFIX}/auth`)
       .then(response => {
         resIsSuccess(response)
           ? commit('option/REQUEST_ADMIN_INFO_SUCCESS', getResData(response))
@@ -84,10 +95,14 @@ export const actions = {
   // 获取全局配置
   loadGlobalOption({ commit }) {
     commit('option/REQUEST_GLOBAL_OPTIONS')
-    return this.$axios.$get(`${API_PREFIX}/option`)
+    return this.$axios
+      .$get(`${API_PREFIX}/option`)
       .then(response => {
         resIsSuccess(response)
-          ? commit('option/REQUEST_GLOBAL_OPTIONS_SUCCESS', getResData(response))
+          ? commit(
+              'option/REQUEST_GLOBAL_OPTIONS_SUCCESS',
+              getResData(response)
+            )
           : commit('option/REQUEST_GLOBAL_OPTIONS_FAILURE')
       })
       .catch(err => {
@@ -98,7 +113,8 @@ export const actions = {
   // 获取标签列表
   loadTagList({ commit }, params = { per_page: 160 }) {
     commit('tag/REQUEST_LIST')
-    return this.$axios.$get(`${API_PREFIX}/tag`, { params })
+    return this.$axios
+      .$get(`${API_PREFIX}/tag`, { params })
       .then(response => {
         resIsSuccess(response)
           ? commit('tag/GET_LIST_SUCCESS', getResData(response))
@@ -112,7 +128,8 @@ export const actions = {
   // 获取分类列表
   loadCategories({ commit }, params = { per_page: 100 }) {
     commit('category/REQUEST_LIST')
-    return this.$axios.$get(`${API_PREFIX}/category`, { params })
+    return this.$axios
+      .$get(`${API_PREFIX}/category`, { params })
       .then(response => {
         resIsSuccess(response)
           ? commit('category/GET_LIST_SUCCESS', getResData(response))
@@ -126,11 +143,12 @@ export const actions = {
   // 获取最热文章列表
   loadHotArticles({ commit }) {
     commit('article/REQUEST_HOT_LIST')
-    return this.$axios.$get(`${API_PREFIX}/article`, { params: { hot: 1 }})
+    return this.$axios
+      .$get(`${API_PREFIX}/article`, { params: { hot: 1 } })
       .then(response => {
         resIsSuccess(response)
           ? commit('article/GET_HOT_LIST_SUCCESS', getResData(response))
-          : commit('article/GET_HOT_LIST_FAILURE');
+          : commit('article/GET_HOT_LIST_FAILURE')
       })
       .catch(err => {
         commit('article/GET_HOT_LIST_FAILURE', err)
@@ -139,19 +157,22 @@ export const actions = {
 
   // 根据post-id获取评论列表
   loadCommentsByPostId({ commit }, params) {
+    params = Object.assign(
+      {
+        page: 1,
+        sort: -1,
+        per_page: 88
+      },
+      params
+    )
 
-    params = Object.assign({
-      page: 1,
-      sort: -1,
-      per_page: 88
-    }, params)
-    
     if (params.page === 1) {
       commit('comment/CLEAR_LIST')
     }
-    
+
     commit('comment/REQUEST_LIST')
-    return this.$axios.$get(`${API_PREFIX}/comment`, { params })
+    return this.$axios
+      .$get(`${API_PREFIX}/comment`, { params })
       .then(response => {
         if (resIsSuccess(response)) {
           const data = getResData(response)
@@ -169,7 +190,8 @@ export const actions = {
   // 发布评论
   postComment({ commit }, comment) {
     commit('comment/POST_ITEM')
-    return this.$axios.$post(`${API_PREFIX}/comment`, comment)
+    return this.$axios
+      .$post(`${API_PREFIX}/comment`, comment)
       .then(response => {
         const data = getResData(response)
         if (resIsSuccess(response)) {
@@ -188,33 +210,35 @@ export const actions = {
 
   // 喜欢某个页面或主站 || 为某条回复点赞
   likeArticleOrPageOrComment({ commit }, like) {
-    return this.$axios.$post(`${API_PREFIX}/like`, like)
-      .then(response => {
-        const data = getResData(response)
-        if (resIsSuccess(response)) {
-          let mutation
-          switch(like.type) {
-            case 1:
-              mutation = 'comment/LIKE_ITEM'
-              break
-            case 2:
-              mutation = Object.is(like.id, 0) ? 'option/LIKE_SITE' : 'article/LIKE_ARTICLE'
-              break
-            default:
-              break
-          }
-          commit(mutation, like)
-          return Promise.resolve(data)
-        } else {
-          return Promise.reject(data)
+    return this.$axios.$post(`${API_PREFIX}/like`, like).then(response => {
+      const data = getResData(response)
+      if (resIsSuccess(response)) {
+        let mutation
+        switch (like.type) {
+          case 1:
+            mutation = 'comment/LIKE_ITEM'
+            break
+          case 2:
+            mutation = Object.is(like.id, 0)
+              ? 'option/LIKE_SITE'
+              : 'article/LIKE_ARTICLE'
+            break
+          default:
+            break
         }
-      })
+        commit(mutation, like)
+        return Promise.resolve(data)
+      } else {
+        return Promise.reject(data)
+      }
+    })
   },
 
   // 获取公告列表
   loadAnnouncements({ commit }, params = {}) {
     commit('announcement/REQUEST_LIST')
-    return this.$axios.$get(`${API_PREFIX}/announcement`, { params })
+    return this.$axios
+      .$get(`${API_PREFIX}/announcement`, { params })
       .then(response => {
         resIsSuccess(response)
           ? commit('announcement/GET_LIST_SUCCESS', getResData(response))
@@ -228,7 +252,8 @@ export const actions = {
   // 获取地图文章列表
   loadSitemapArticles({ commit }, params = { page: 1 }) {
     commit('sitemap/REQUEST_ARTICLES')
-    return this.$axios.$get(`${API_PREFIX}/article`, { params })
+    return this.$axios
+      .$get(`${API_PREFIX}/article`, { params })
       .then(response => {
         resIsSuccess(response)
           ? commit(`sitemap/GET_ARTICLES_SUCCESS`, getResData(response))
@@ -245,16 +270,19 @@ export const actions = {
       commit('article/CLEAR_LIST')
     }
     commit('article/REQUEST_LIST')
-    return this.$axios.$get(`${API_PREFIX}/article`, { params })
+    return this.$axios
+      .$get(`${API_PREFIX}/article`, { params })
       .then(response => {
         const success = resIsSuccess(response)
         const loadMore = params.page && params.page > 1
-        const commitName =  `article/${loadMore ? 'ADD' : 'GET'}_LIST_SUCCESS`
+        const commitName = `article/${loadMore ? 'ADD' : 'GET'}_LIST_SUCCESS`
         if (success) {
           commit(commitName, getResData(response))
           if (loadMore && isBrowser) {
             Vue.nextTick(() => {
-              scrollTo(window.scrollY + (window.innerHeight * 0.8), 300, { easing: Easing['ease-in'] })
+              scrollTo(window.scrollY + window.innerHeight * 0.8, 300, {
+                easing: Easing['ease-in']
+              })
             })
           }
         } else {
@@ -269,26 +297,26 @@ export const actions = {
   // 获取文章详情
   loadArticleDetail({ commit }, params = {}) {
     commit('article/REQUEST_DETAIL')
-    return this.$axios.$get(`${API_PREFIX}/article/${params.article_id}`)
-    .then(response => {
-      const data = getResData(response)
-      if (resIsSuccess(response)) {
-        commit('article/GET_DETAIL_SUCCESS', data)
-        return Promise.resolve(data)
-      } else {
-        commit('article/GET_DETAIL_FAILURE')
-        return Promise.reject(response)
-      }
-    })
-    .catch(err => {
-      commit('article/GET_DETAIL_FAILURE', err)
-      return Promise.reject(err)
-    })
+    return this.$axios
+      .$get(`${API_PREFIX}/article/${params.article_id}`)
+      .then(response => {
+        const data = getResData(response)
+        if (resIsSuccess(response)) {
+          commit('article/GET_DETAIL_SUCCESS', data)
+          return Promise.resolve(data)
+        } else {
+          commit('article/GET_DETAIL_FAILURE')
+          return Promise.reject(response)
+        }
+      })
+      .catch(err => {
+        commit('article/GET_DETAIL_FAILURE', err)
+        return Promise.reject(err)
+      })
   },
 
   // 获取开源项目列表
   loadGithubRepositories({ commit, state }) {
-
     // 如果数据已存在，则直接返回Promise成功，并返回数据
     if (state.project.repositories.data.length) {
       return Promise.resolve(state.project.repositories.data)
@@ -296,17 +324,18 @@ export const actions = {
 
     // 不存在则请求新数据
     commit('project/REQUEST_GUTHUB_REPOSITORIES')
-    return this.$axios.$get(`${API_PREFIX}/github`)
+    return this.$axios
+      .$get(`${API_PREFIX}/github`)
       .then(response => {
         resIsSuccess(response)
-          ? commit('project/REQUEST_GUTHUB_REPOSITORIES_SUCCESS', getResData(response))
+          ? commit(
+              'project/REQUEST_GUTHUB_REPOSITORIES_SUCCESS',
+              getResData(response)
+            )
           : commit('project/REQUEST_GUTHUB_REPOSITORIES_FAILURE')
       })
       .catch(err => {
         commit('project/REQUEST_GUTHUB_REPOSITORIES_FAILURE', err)
       })
-  },
-
-
-
+  }
 }

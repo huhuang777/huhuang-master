@@ -1,0 +1,6 @@
+// cdn 不能直接设为空，因为在生产环境加载资源时，是以 cdn 相对路径计算的
+$cdn-url: 'https://cdn.huhuang.net';
+
+$origin-url: 'https://huhuang.net';
+
+$iconfont-url: '//at.alicdn.com/t/font_789538_qpxs65nstct.css';

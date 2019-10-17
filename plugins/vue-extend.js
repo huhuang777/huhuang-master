@@ -3,8 +3,8 @@
  */
 
 import Vue from 'vue'
-import apiConfig from '@/api.config'
-import i18nConfig from '@/i18n.config'
+import apiConfig from '@/config/api.config'
+import i18nConfig from '@/config/i18n.config'
 import filters from '@/filters'
 import i18nTransfer from '@/utils/i18n-transfer'
 import EmptyBox from '@/components/common/empty'
@@ -17,8 +17,8 @@ const i18nData = i18nTransfer(i18nConfig)
 Vue.prototype.cdnUrl = apiConfig.cdnUrl
 Vue.prototype.proxyUrl = apiConfig.proxyUrl
 
- // filters
- Object.keys(filters).forEach(key => Vue.filter(key, filters[key]))
+// filters
+Object.keys(filters).forEach(key => Vue.filter(key, filters[key]))
 Vue.use(EmptyBox)
 Vue.use(LoadingBox)
 Vue.use(CommentBox)

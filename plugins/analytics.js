@@ -5,10 +5,9 @@
 
 import Vue from 'vue'
 import VueAnalytics from 'vue-analytics'
-import {isBrowser, isProdMode } from '../environment'
+import { isBrowser, isProdMode } from '../environment/index'
 
 if (isBrowser) {
-  
   // 新版本解决方案
   window.onNuxtReady(app => {
     Vue.use(VueAnalytics, {
@@ -29,9 +28,8 @@ if (isBrowser) {
   })
 }
 
-
-  // 旧版本解决方案
-  /*
+// 旧版本解决方案
+/*
   // Google 统计分析脚本
   (function(i, s, o, g, r, a, m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)}, i[r].l=1*new Date();a=s.createElement(o), 
@@ -54,4 +52,3 @@ if (isBrowser) {
     })
   })
   */
-

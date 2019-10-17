@@ -316,7 +316,7 @@
 
 <script>
   import { mapState } from 'vuex'
-  import { isBrowser } from '~/environment'
+  import { isBrowser } from '~/environment/index'
   import marked from '~/plugins/marked'
   import gravatar from '~/plugins/gravatar'
   import stateConstants from '~/constants/state'

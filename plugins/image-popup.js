@@ -1,13 +1,12 @@
 /**
  * @file 图片弹窗服务 / ES module
  * @module plugins/image-popup
- * 
+ *
  */
 
-import { isBrowser } from '@/environment'
+import { isBrowser } from '@/environment/index'
 
 if (isBrowser) {
-
   // 销毁图片弹窗
   const closeImgPopup = () => {
     const mask = document.getElementById('image-popup')

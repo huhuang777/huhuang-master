@@ -3,10 +3,9 @@
  * @module store/option
  */
 
-import i18nConfig from '~/i18n.config'
+import i18nConfig from '~/config/i18n.config'
 
 export const state = () => ({
-
   // 默认语言
   language: i18nConfig.default,
 
@@ -64,7 +63,6 @@ export const getters = {
 }
 
 export const mutations = {
-
   // 设置UA
   SET_USER_AGENT(state, action) {
     state.userAgent = action
