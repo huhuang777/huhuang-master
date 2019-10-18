@@ -50,6 +50,9 @@ export default {
       }
     }
   },
+  beforeDestroy() {
+    this.$refs.appMain.removeEventListener('click', this.closeMobileSidebar)
+  },
   mounted() {
     this.$refs.appMain.addEventListener('click', this.closeMobileSidebar, true)
   }

@@ -3,11 +3,12 @@
     <div class="article-list">
       <transition name="module" mode="out-in">
         <transition-group name="fade" tag="div" v-if="article && article.length>0">
-          <list-item :key="index"
+          <list-item
+            :key="index"
             :article="item"
             @click.native="toDetail(item)"
-            v-for="(item, index) in article">
-          </list-item>
+            v-for="(item, index) in article"
+          ></list-item>
         </transition-group>
       </transition>
     </div>
@@ -17,30 +18,36 @@
 <script>
 import ListItem from './item.vue'
 export default {
-  data () {
-    return {
-      
-    }
+  data() {
+    return {}
   },
   props: {
     article: {
       type: Array,
-      default:(()=>{return []})
+      default: () => {
+        return []
+      }
     }
   },
-  components:{
+  computed: {
+    mobileLayout() {
+      return this.$store.state.option.mobileLayout
+    }
+  },
+  components: {
     ListItem
   },
   methods: {
-    toDetail(article){
-
+    toDetail(article) {
+      if (this.mobileLayout) {
+        this.$router.push(`/article/${article.id}`)
+      }
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.articles{
-
+.articles {
 }
 </style>

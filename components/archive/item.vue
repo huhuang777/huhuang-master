@@ -46,7 +46,7 @@
             <span>{{ article.meta.comments || 0 }}</span>
           </span>
           <span class="likes">
-            <i class="iconfont icon-like"></i>
+            <i class="iconfont icon-like" :class="{ liked: isLiked }"></i>
             <span>{{ article.meta.likes || 0 }}</span>
           </span>
           <span class="categories" v-if="!mobileLayout">
@@ -77,10 +77,16 @@
 
 <script>
 import { mapState } from 'vuex'
+import { localHistoryLikes } from '~/utils/local-storage'
 export default {
   name: 'article-list-item',
   props: {
     article: Object
+  },
+  data() {
+    return {
+      isLiked: false
+    }
   },
   computed: {
     ...mapState('option', ['imgExt', 'mobileLayout'])
@@ -92,6 +98,10 @@ export default {
         this.imgExt
       }/interlace/1/q/75|watermark/2/text/SHVodWFuZy5uZXQ=/font/Y2FuZGFyYQ==/fontsize/460/fill/I0ZGRkZGRg==/dissolve/23/gravity/SouthWest/dx/15/dy/7|imageslim`
     }
+  },
+  mounted() {
+    const historyLikes = localHistoryLikes.get()
+    this.isLiked = historyLikes && historyLikes.pages.includes(this.article.id)
   }
 }
 </script>

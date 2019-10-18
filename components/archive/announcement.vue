@@ -1,18 +1,20 @@
 <template>
-  <div class="announcement">
-    <color-block-box :left="-59" :gray="true"/>
+  <div class="announcement" :class="{ mobile: mobileLayout }">
+    <color-block-box :left="-59" :gray="true" v-if="!mobileLayout" />
     <div class="title">
       <i class="iconfont icon-radio"></i>
     </div>
     <transition name="module" mode="out-in">
       <empty-box class="announcement-empty-box" v-if="!announcement.data.data.length">
-        <slot>{{  'No Result Announcement.' }}</slot>
+        <slot>{{ 'No Result Announcement.' }}</slot>
       </empty-box>
       <div class="swiper" v-swiper:swiper="swiperOption" v-else>
         <div class="swiper-wrapper">
-          <div class="swiper-slide item"
-               :key="index"
-               v-for="(announcement, index) in announcement.data.data.slice(0, 9)">
+          <div
+            class="swiper-slide item"
+            :key="index"
+            v-for="(announcement, index) in announcement.data.data.slice(0, 9)"
+          >
             <div class="content" v-html="markedContent(announcement.content)"></div>
           </div>
         </div>
@@ -28,123 +30,130 @@
 </template>
 
 <script>
-  import { mapState } from 'vuex'
-  import marked from '~/plugins/marked'
-  export default {
-    name: 'index-announcement',
-    props: {
-      announcement: {
-        type: Object
-      }
-    },
-    data() {
-      return {
-        swiperOption: {
-          autoplay: {
-            delay: 3500,
-            disableOnInteraction: false
-          },
-          navigation: {
-            nextEl: '.swiper-button-next',
-            prevEl: '.swiper-button-prev'
-          },
-          pagination: {
-            clickable: true
-          },
-          allowTouchMove: false,
-          slidesPerView: 1,
-          setWrapperSize: true,
-          direction: 'vertical',
-          // loop: true
-        }
-      }
-    },
-    methods: {
-      markedContent(content) {
-        return marked(content, null, true)
-      }
-    },
-    computed: {
-      ...mapState('option', ['mobileLayout'])
+import { mapState } from 'vuex'
+import marked from '~/plugins/marked'
+export default {
+  name: 'index-announcement',
+  props: {
+    announcement: {
+      type: Object
     }
+  },
+  data() {
+    return {
+      swiperOption: {
+        autoplay: {
+          delay: 3500,
+          disableOnInteraction: false
+        },
+        navigation: {
+          nextEl: '.swiper-button-next',
+          prevEl: '.swiper-button-prev'
+        },
+        pagination: {
+          clickable: true
+        },
+        allowTouchMove: false,
+        slidesPerView: 1,
+        setWrapperSize: true,
+        direction: 'vertical'
+        // loop: true
+      }
+    }
+  },
+  methods: {
+    markedContent(content) {
+      return marked(content, null, true)
+    }
+  },
+  computed: {
+    ...mapState('option', ['mobileLayout'])
   }
+}
 </script>
 
 <style lang="scss">
-  .announcement {
-    height: 2.8em;
-    line-height: 2.75em;
-    font-size: .9em;
-    margin-bottom: 1em;
-    overflow: hidden;
-    position: relative;
-    background-color: $module-bg;
-    color: $white;
+$announcement-height: 2.8em;
 
-    .announcement-empty-box {
-      min-height: auto;
-    }
+.announcement {
+  height: $announcement-height;
+  line-height: 2.75em;
+  font-size: 0.9em;
+  margin-bottom: 1em;
+  overflow: hidden;
+  position: relative;
+  background-color: $module-bg;
+  color: $white;
 
-    > .title {
-      float: left;
-      width: 10%;
-      text-align: center;
+  &.mobile {
+    background-color: $module-hover-bg-darken-10;
+  }
 
-      > .iconfont {
-        font-size: 1.3rem;
-      }
-    }
+  .announcement-empty-box {
+    min-height: auto;
+  }
 
-    > .swiper {
-      float: right;
-      width: 90%;
+  > .title {
+    float: left;
+    width: 10%;
+    text-align: center;
 
-      .item {
-
-        > .content {
-          width: 100%;
-          position: relative;
-          @include text-overflow();
-
-          p {
-            width: 90%;
-            margin: 0;
-            @include text-overflow();
-          }
-
-          a {
-            text-decoration: underline;
-          }
-        }
-      }
-
-      .swiper-button-prev,
-      .swiper-button-next {
-        position: absolute;
-        left: auto;
-        right: .5em;
-        height: 10px;
-        margin: 0;
-        width: 2em;
-        height: 1em;
-        text-align: center;
-        line-height: 1em;
-        background-image: none;
-        color: $module-hover-bg;
-        cursor: pointer;
-
-        &:hover {
-          color: $text;
-        }
-      }
-
-      .swiper-button-prev {
-        top: .5em;
-      }
-
-      .swiper-button-next {
-        top: 1.5em;
-      }
+    > .iconfont {
+      font-size: 1.3rem;
     }
   }
+
+  > .swiper {
+    float: right;
+    width: 90%;
+
+    .slide-item {
+      height: $announcement-height;
+
+      > .content {
+        width: 100%;
+        position: relative;
+        @include text-overflow();
+
+        p {
+          width: 90%;
+          margin: 0;
+          @include text-overflow();
+        }
+
+        a {
+          text-decoration: underline;
+        }
+      }
+    }
+
+    .swiper-button-prev,
+    .swiper-button-next {
+      position: absolute;
+      left: auto;
+      right: 0.5em;
+      height: 10px;
+      margin: 0;
+      width: 2em;
+      height: 1em;
+      text-align: center;
+      line-height: 1em;
+      background-image: none;
+      color: $module-hover-bg;
+      cursor: pointer;
+
+      &:hover {
+        color: $text;
+      }
+    }
+
+    .swiper-button-prev {
+      top: 0.5em;
+    }
+
+    .swiper-button-next {
+      top: 1.5em;
+    }
+  }
+}
 </style>

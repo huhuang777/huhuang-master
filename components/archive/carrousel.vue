@@ -4,17 +4,17 @@
       <empty-box class="article-empty-box" key="empty" v-if="!article.data.data.length">
         <slot>{{ "空空如也" }}</slot>
       </empty-box>
-      <div class="swiper" v-swiper:swiper="swiperOption" v-else-if="renderSwiper">
+      <div class="swiper index" v-swiper:swiper="swiperOption" v-else-if="renderSwiper">
         <div class="swiper-wrapper">
           <div
-            class="swiper-slide item"
+            class="swiper-slide slide-item"
             v-for="(article, index) in article.data.data.slice(0, 9)"
             :key="index"
           >
             <div class="content">
-              <img :src="buildThumb(article.thumb)" :alt="article.title" />
-              <nuxt-link :to="`/article/${article.id}`" class="title">
-                <span>{{ article.title }}</span>
+              <nuxt-link :to="`/article/${article.id}`">
+                <img :src="buildThumb(article.thumb)" :alt="article.title" />
+                <span class="title">{{ article.title }}</span>
               </nuxt-link>
             </div>
           </div>
@@ -64,11 +64,11 @@ export default {
         if (this.mobileLayout) {
           return `${thumb}?imageView2/1/w/768/h/271/format/${
             this.imageExt
-          }/interlace/1/q/80|watermark/2/text/SHVodWFuZy5uZXQ=/font/Y2FuZGFyYQ==/fontsize/560/fill/I0ZGRkZGRg==/dissolve/30/gravity/SouthWest/dx/30/dy/15|imageslim`
+          }/interlace/1/q/80|watermark/2/text/U3VybW9uLm1l/font/Y2FuZGFyYQ==/fontsize/560/fill/I0ZGRkZGRg==/dissolve/30/gravity/SouthWest/dx/30/dy/15|imageslim`
         } else {
           return `${thumb}?imageView2/1/w/1190/h/420/format/${
             this.imageExt
-          }/interlace/1/q/80|watermark/2/text/SHVodWFuZy5uZXQ=/font/Y2FuZGFyYQ==/fontsize/680/fill/I0ZGRkZGRg==/dissolve/30/gravity/SouthWest/dx/30/dy/15|imageslim`
+          }/interlace/1/q/80|watermark/2/text/U3VybW9uLm1l/font/Y2FuZGFyYQ==/fontsize/680/fill/I0ZGRkZGRg==/dissolve/30/gravity/SouthWest/dx/30/dy/15|imageslim`
         }
       } else {
         return `${this.cdnUrl}/images/${
@@ -87,6 +87,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+$pc-carrousel-height: 15em;
+$mobile-carrousel-height: calc((100vw - 2rem) * 0.35);
 .carrousel {
   height: 15em;
   margin-bottom: 1em;
@@ -95,66 +97,76 @@ export default {
   background-color: $module-bg;
 
   > .swiper {
-    .item {
+    .slide-item {
       > .content {
         width: 100%;
-        height: 15em;
+        height: $pc-carrousel-height;
         position: relative;
         overflow: hidden;
 
-        > img {
+        > .link {
+          display: block;
           width: 100%;
           height: 100%;
-          display: flex;
-          @include css3-prefix(transform, rotate(0deg) scale(1));
-          @include css3-prefix(transition, transform 1s);
+        }
+
+        img {
+          width: 100%;
+          @include css3-prefix(transform, scale(1));
+          @include css3-prefix(transition, transform 0.88s);
 
           &:hover {
-            @include css3-prefix(transform, rotate(2deg) scale(1.1));
+            @include css3-prefix(transform, scale(1.06));
           }
         }
 
-        > .title {
+        .title {
           position: absolute;
+          margin: 0;
           top: 1.5rem;
           right: 2rem;
           color: $link-color;
-          margin: 0;
-          padding: 0 0.6em;
+          padding-right: 0.6em;
+          padding-left: 1em;
           height: 2em;
           line-height: 2em;
           font-size: 1em;
           font-weight: bold;
           border-radius: 1px;
           letter-spacing: 0.3px;
+          max-width: 75%;
+          @include text-overflow;
+
           -webkit-background-clip: text;
+          // background-color: $module-hover-bg-opacity-9;
           background: linear-gradient(
-            to right,
-            transparent,
-            $module-hover-bg-opacity-3,
-            $module-hover-bg,
-            $module-bg
+            90deg,
+            transparent 0%,
+            $module-bg 2em,
+            $module-bg-opacity-9,
+            $white
           );
 
           &:hover {
             color: $text-darken;
-            background-color: $module-hover-bg-opacity-9;
+            // background: none;
+            padding-left: 0.6em;
+
+            background-color: $module-bg;
           }
         }
       }
     }
   }
   &.mobile {
-    min-height: 8rem;
-    height: auto;
+    height: $mobile-carrousel-height;
     > .swiper {
-      .item {
+      .slide-item {
         > .content {
-          min-height: 8rem;
-          height: auto;
+          height: $mobile-carrousel-height;
           > .title {
-            max-width: 75%;
-            @include text-overflow;
+            right: 1.7rem;
+            max-width: 70%;
           }
         }
       }
