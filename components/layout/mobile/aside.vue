@@ -19,9 +19,13 @@
           <i class="iconfont icon-code"></i>
           <span v-text="$i18n.nav.code"></span>
         </nuxt-link>
-        <nuxt-link to="/category/Think" class="item">
+        <nuxt-link to="/category/think" class="item">
           <i class="iconfont icon-deng"></i>
           <span v-text="$i18n.nav.think"></span>
+        </nuxt-link>
+        <nuxt-link to="/category/mathematics" class="item">
+          <i class="iconfont icon-suanfadian"></i>
+          <span v-text="$i18n.nav.mathematics"></span>
         </nuxt-link>
         <nuxt-link to="/archive" class="item">
           <i class="iconfont icon-sitemap"></i>

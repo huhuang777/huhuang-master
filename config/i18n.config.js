@@ -31,6 +31,10 @@ module.exports = {
         zh: '所思所想',
         en: 'Think'
       },
+      mathematics: {
+        zh: '数学的魅力',
+        en: 'Mathematics'
+      },
       map: {
         zh: '归档',
         en: 'Archive'
