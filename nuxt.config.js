@@ -122,7 +122,7 @@ module.exports = {
     { src: '~/plugins/loaded-task' },
     { src: '~/plugins/highlight.js' },
     { src: '~/plugins/image-popup.js', mode: 'client' },
-    { src: '~/plugins/analytics.js', mode: 'client' }
+    { src: '~/plugins/analytics.js', ssr: false }
     // { src: '~/plugins/particles.js', ssr: false }
   ],
 
