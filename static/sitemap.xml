@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+<!-- created with Free Online Sitemap Generator www.xml-sitemaps.com -->
+
+
+<url>
+  <loc>https://huhuang.net/</loc>
+  <lastmod>2019-10-21T06:59:15+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+<url>
+  <loc>https://huhuang.net/archive</loc>
+  <lastmod>2019-10-21T06:59:15+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://huhuang.net/about</loc>
+  <lastmod>2019-10-21T06:59:15+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://huhuang.net/guestbook</loc>
+  <lastmod>2019-10-21T06:59:15+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://huhuang.net/article/1</loc>
+  <lastmod>2019-10-21T06:59:15+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://huhuang.net/category/code</loc>
+  <lastmod>2019-10-21T06:59:15+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://huhuang.net/tag/canvas</loc>
+  <lastmod>2019-10-21T06:59:15+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://huhuang.net/tag/life</loc>
+  <lastmod>2019-10-21T06:59:15+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://huhuang.net/tag/algorithm</loc>
+  <lastmod>2019-10-21T06:59:15+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://huhuang.net/tag/physical</loc>
+  <lastmod>2019-10-21T06:59:15+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://huhuang.net/tag/vue</loc>
+  <lastmod>2019-10-21T06:59:15+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://huhuang.net/category/mathematics</loc>
+  <lastmod>2019-10-21T06:59:15+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://huhuang.net/category/think</loc>
+  <lastmod>2019-10-21T06:59:15+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://huhuang.net/guestbook?from=about</loc>
+  <lastmod>2019-10-21T06:59:15+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://huhuang.net/date/2019-03-23</loc>
+  <lastmod>2019-10-21T06:59:15+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+
+
+</urlset>

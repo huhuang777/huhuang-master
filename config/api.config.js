@@ -4,5 +4,5 @@
  */
 
 const apiJson = require('./api.json')
-const { NODE_ENV } = require('../environment/index')
+const { NODE_ENV } = require('../environment')
 module.exports = apiJson[NODE_ENV]

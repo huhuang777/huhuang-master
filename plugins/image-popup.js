@@ -4,7 +4,7 @@
  *
  */
 
-import { isBrowser } from '@/environment/index'
+import { isBrowser } from '@/environment/esm'
 
 if (isBrowser) {
   // 销毁图片弹窗

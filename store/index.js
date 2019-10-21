@@ -6,7 +6,7 @@
 
 import Vue from 'vue'
 import apiConfig from '~/config/api.config'
-import { isBrowser, isServer } from '~/environment/index'
+import { isBrowser, isServer } from '~/environment/esm'
 import uaDevice from '~/utils/ua-device'
 import { scrollTo, Easing } from '~/utils/scroll-to-anywhere'
 

@@ -3,7 +3,7 @@
  * @module plugins/baidu-seo-push
  */
 
-import { isBrowser, isProdMode } from '~/environment'
+import { isBrowser, isProdMode } from '~/environment/esm'
 
 if (isProdMode && isBrowser) {
   /*
@@ -11,17 +11,20 @@ if (isProdMode && isBrowser) {
   ** https://zz.bdstatic.com/linksubmit/push.js
   */
   const baiduPush = href => {
-    (function() {
+    ;(function() {
       const e = /([http|https]:\/\/[a-zA-Z0-9\_\.]+\.baidu\.com)/gi
       const r = href || window.location.href
       const t = document.referrer
       if (!e.test(r)) {
-        let o = "https://sp0.baidu.com/9_Q4simg2RQJ8t7jm9iCKT-xh_/s.gif"
-        t ? (o += "?r=" + encodeURIComponent(document.referrer), r && (o += "&l=" + r)) : r && (o += "?l=" + r)
-        const i = new Image
+        let o = 'https://sp0.baidu.com/9_Q4simg2RQJ8t7jm9iCKT-xh_/s.gif'
+        t
+          ? ((o += '?r=' + encodeURIComponent(document.referrer)),
+            r && (o += '&l=' + r))
+          : r && (o += '?l=' + r)
+        const i = new Image()
         i.src = o
       }
-    }(window))
+    })(window)
   }
 
   baiduPush()
@@ -29,7 +32,7 @@ if (isProdMode && isBrowser) {
   /*
   ** 应用挂载后
   */
-  window.onNuxtReady((app) => {
+  window.onNuxtReady(app => {
     app.$nuxt.$on('routeChanged', to => {
       baiduPush(window.location.origin + to.fullPath)
     })

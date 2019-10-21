@@ -5,7 +5,7 @@
 
 import Vue from 'vue'
 import VueAnalytics from 'vue-analytics'
-import { isBrowser, isProdMode } from '../environment/index'
+import { isBrowser, isProdMode } from '../environment/esm'
 
 if (isBrowser) {
   // 新版本解决方案
