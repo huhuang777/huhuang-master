@@ -29,7 +29,7 @@ import { isBrowser, isProdMode } from '../environment/esm'
 //   })
 // }
 
-if (isProdMode) {
+if (process.client && isProdMode) {
   /*
   ** Google 统计分析脚本
   */
