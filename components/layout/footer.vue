@@ -3,7 +3,7 @@
     <div class="container">
       <div class="footer-content">
         <nuxt-link to>
-          <span @click="goBeiAn">浙ICP备18052298号</span>
+          <span @click="goBeiAn">浙ICP备18052298号-1</span>
         </nuxt-link>
         <!-- <span> - </span> -->
         <span>&nbsp;&nbsp;|&nbsp;&nbsp;</span>
