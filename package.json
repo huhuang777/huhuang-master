@@ -29,7 +29,7 @@
     "koa": "^2.7.0",
     "marked": "^0.4.0",
     "node-uuid": "^1.4.8",
-    "nuxt": "^2.1.0",
+    "nuxt": "^2.15.8",
     "vue-analytics": "^5.16.0",
     "vue-awesome-swiper": "^3.1.3"
   },
